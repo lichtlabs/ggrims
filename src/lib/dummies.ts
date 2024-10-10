@@ -1,6 +1,4 @@
-import DynForm from "./components/dyn-form"
-
-const dummyInputs = [
+export const dummyInputs = [
   {
     name: "name",
     label: "Name",
@@ -92,18 +90,3 @@ const dummyInputs = [
     ]
   }
 ]
-
-type RsvpPageProps = {
-  searchParams: {
-    eventId: string
-  }
-}
-
-export default function RsvpPage({ searchParams: { eventId } }: RsvpPageProps) {
-  return (
-    <div className="py-8">
-      <h1 className="mb-14 text-2xl">Event Name</h1>
-      <DynForm inputs={dummyInputs as Array<any>} />
-    </div>
-  )
-}

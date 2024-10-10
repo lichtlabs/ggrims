@@ -1,11 +1,13 @@
 import type { Metadata } from "next"
 
 export async function generateMetadata({
-  searchParams: { eventId }
+  params
 }: {
-  searchParams: { eventId: string }
+  params: { eventId: string }
 }): Promise<Metadata> {
+  const eventId = params.eventId
   // const event = await getEvent(eventId)
+
   return {
     title: "RSVP",
     description: "RSVP for an event"
