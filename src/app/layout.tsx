@@ -22,9 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn("antialiased", fonts.firaMono.className)}>
+      <body
+        className={cn("bg-[#F4EDE7] antialiased", fonts.firaMono.className)}
+      >
         <QueryProvider>
-          <main className="container mx-auto px-4 md:px-0">{children}</main>
+          <main className="container mx-auto px-4 md:px-8">{children}</main>
           <Toaster />
         </QueryProvider>
       </body>

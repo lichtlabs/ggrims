@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { truncate } from "@/lib/utils"
-import RsvpButton from "./components/rsvp-button"
+import GetTicketButton from "./components/get-ticket-button"
+import EventsList from "./components/events-list"
 
 export const metadata: Metadata = {
   title: "Upcoming",
@@ -45,23 +46,7 @@ export default function UpcomingPage() {
     <div className="mx-auto max-w-lg py-8">
       <h1 className="mb-14 text-2xl">Upcoming Events</h1>
       <ul className="space-y-4">
-        {dummyUpcomingEvents.map((event) => (
-          <li key={event.id} className="border-b border-black/[.08] pb-4">
-            <div className="relative flex justify-between">
-              <div>
-                <h2 className="text-lg">{event.name}</h2>
-                <p className="mb-2 text-sm text-indigo-600">
-                  {event.location} {"<>"}{" "}
-                  {new Date(event.date).toLocaleDateString()}
-                </p>
-                <p className="text-sm">{truncate(event.description, 54)}</p>
-              </div>
-              <div className="absolute right-0">
-                <RsvpButton eventId={event.id} />
-              </div>
-            </div>
-          </li>
-        ))}
+        <EventsList />
       </ul>
     </div>
   )

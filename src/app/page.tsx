@@ -9,11 +9,10 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <div className="flex h-screen w-full items-center">
-      <div>
-        <h1>Welcome to G'GRIMS</h1>
-        <p>
-          We're an event organizer. We're looking for people to attend our
-          events
+      <div className="flex w-full flex-col items-center text-center">
+        <h1 className="text-2xl">Welcome to G&apos;GRIMS</h1>
+        <p className="mb-4">
+          We&apos;re looking for people to attend our events
         </p>
         <Link href="/upcoming" className="underline">
           See our upcoming events {"→"}

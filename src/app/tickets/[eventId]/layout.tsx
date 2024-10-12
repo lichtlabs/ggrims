@@ -9,15 +9,15 @@ export async function generateMetadata({
   // const event = await getEvent(eventId)
 
   return {
-    title: "RSVP",
-    description: "RSVP for an event"
+    title: "Get ticket",
+    description: "Get ticket for an event"
   }
 }
 
-type RsvpLayoutProps = {
+type GetTicketLayoutProps = {
   children: React.ReactNode
 }
 
-export default function RsvpLayout({ children }: RsvpLayoutProps) {
+export default function GetTicketLayout({ children }: GetTicketLayoutProps) {
   return children
 }

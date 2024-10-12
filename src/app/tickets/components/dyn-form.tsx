@@ -7,39 +7,49 @@ import { toast } from "sonner"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { cn } from "@/lib/utils"
+import { AsteriskIcon } from "lucide-react"
+import { setTimeout } from "timers"
+import { useRouter } from "next/navigation"
 
 type DynFormProps = {
   inputs: Array<DynamicInput>
   eventId: string
 }
 
-const rsvpFormSchema = z.object({
-  ticketCount: z.number().min(1),
+const getTicketFormSchema = z.object({
+  ticketCount: z.string().min(1),
   attendees: z.array(z.any()).nonempty("Please add at least one attendee")
 })
 
-type RsvpFormSchema = z.infer<typeof rsvpFormSchema>
+type GetTicketFormSchema = z.infer<typeof getTicketFormSchema>
 
 export default function DynForm({ inputs, eventId }: DynFormProps) {
-  const form = useForm<RsvpFormSchema>({
-    resolver: zodResolver(rsvpFormSchema),
+  const router = useRouter()
+  const form = useForm<GetTicketFormSchema>({
+    resolver: zodResolver(getTicketFormSchema),
     defaultValues: {
-      ticketCount: 1,
+      ticketCount: "1",
       attendees: [{}]
     }
   })
-
-  console.log("@form", form.formState.errors)
 
   const { fields, prepend, remove } = useFieldArray({
     control: form.control,
     name: "attendees"
   })
 
-  const rsvpMutation = useMutation({
-    mutationFn: apiClient.submitRsvp,
-    onSuccess: () => {
-      toast("Thanks for your RSVP!")
+  const getTicketMutation = useMutation({
+    mutationFn: apiClient.buyTicket,
+    onSuccess: (data: any) => {
+      toast("Thanks for your purchases!")
+      setTimeout(() => {
+        // redirect to data?.data.link_url
+        if (!data) {
+          return
+        }
+        const redirectUrl = "https://" + data?.data.link_url
+        window.open(redirectUrl, "_blank")
+      }, 1000)
     },
     onError: (err) => {
       toast(err.message)
@@ -48,14 +58,16 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
 
   const onSubmit = async (data: FieldValues) => {
     const payload = {
-      attendees: data.attendees,
+      data: {
+        attendees: data.attendees,
+        ticket_amount: parseInt(data.ticketCount)
+      },
       eventId
     }
-
-    console.log("@payload", payload)
-
-    // rsvpMutation.mutate(payload)
+    getTicketMutation.mutate(payload)
   }
+
+  console.log("@input state errors:", form.formState.errors)
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -91,7 +103,7 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
       </div>
       <h2
         className={cn(
-          fields.length > form.watch("ticketCount") && "text-red-500"
+          fields.length > parseInt(form.watch("ticketCount")) && "text-red-500"
         )}
       >
         {fields.length} of {form.watch("ticketCount") || 0} Ticket
@@ -107,7 +119,9 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
                       htmlFor={`attendees.${index}.${input.name}`}
                       className="block text-sm font-medium text-gray-700"
                     >
-                      {input.label}
+                      <div className="flex">
+                        {input.label} {input.required && <Required />}
+                      </div>
                     </label>
                     <textarea
                       id={field.id}
@@ -124,7 +138,9 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
                       htmlFor={`attendees.${index}.${input.name}`}
                       className="block text-sm font-medium text-gray-700"
                     >
-                      {input.label}
+                      <div className="flex">
+                        {input.label} {input.required && <Required />}
+                      </div>
                     </label>
                     <select
                       id={field.id}
@@ -153,13 +169,40 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
                       htmlFor={`attendees.${index}.${input.name}`}
                       className="ml-2 block text-sm"
                     >
-                      {input.label}
+                      <div className="flex">
+                        {input.label} {input.required && <Required />}
+                      </div>
                     </label>
                   </div>
+                ) : input.type === "number" ? (
+                  <>
+                    {" "}
+                    <label
+                      htmlFor={`attendees.${index}.${input.name}`}
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      <div className="flex">
+                        {input.label} {input.required && <Required />}
+                      </div>
+                    </label>
+                    <input
+                      id={field.id}
+                      required={input.required}
+                      {...form.register(`attendees.${index}.${input.name}`)}
+                      type={input.type}
+                      placeholder={input.placeholder}
+                      onChange={(e) => {
+                        form.setValue(
+                          `attendees.${index}.${input.name}`,
+                          parseInt(e.target.value)
+                        )
+                      }}
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 sm:text-sm"
+                    />
+                  </>
                 ) : input.type === "date" ||
                   input.type === "time" ||
                   input.type === "datetime-local" ||
-                  input.type === "number" ||
                   input.type === "range" ||
                   input.type === "color" ||
                   input.type === "file" ||
@@ -174,7 +217,9 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
                       htmlFor={`attendees.${index}.${input.name}`}
                       className="block text-sm font-medium text-gray-700"
                     >
-                      {input.label}
+                      <div className="flex">
+                        {input.label} {input.required && <Required />}
+                      </div>
                     </label>
                     <input
                       id={field.id}
@@ -201,5 +246,14 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
         </div>
       ))}
     </form>
+  )
+}
+
+function Required() {
+  return (
+    <span className="inline text-red-500">
+      <span className="sr-only">Required</span>
+      <AsteriskIcon className="h-3 w-3" />
+    </span>
   )
 }
