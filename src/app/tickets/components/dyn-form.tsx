@@ -13,7 +13,7 @@ import { setTimeout } from "timers"
 type DynFormProps = {
   inputs: Array<DynamicInput>
   eventId: string
-  ticket?: Ticket & { count: number }
+  ticket?: Omit<Ticket, "id"> & { count: number }
 }
 
 const getTicketFormSchema = z.object({
@@ -95,7 +95,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
           onChange={(e) => {
             form.setValue(
               "ticketCount",
-              parseInt(e.target.value) > (ticket && ticket?.count)
+              parseInt(e.target.value) > ((ticket as any) && ticket?.count)
                 ? ""
                 : e.target.value
             )

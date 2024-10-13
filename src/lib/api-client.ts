@@ -25,7 +25,7 @@ class ApiClient {
 
   async buyTicket(payload: {
     data: {
-      ticket_name: string
+      ticket_name?: string
       ticket_amount: number
       attendees: Array<Record<string, FormDataEntryValue>>
     }
