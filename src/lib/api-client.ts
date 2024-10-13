@@ -1,6 +1,7 @@
 import BaseApiService from "./base-api"
 import type {
   BuyTicketResponse,
+  CreateEventSchema,
   Event,
   EventWithTicketInputs
 } from "@/lib/types"
@@ -28,6 +29,21 @@ class ApiClient {
   async getEvent(id: string) {
     return BaseApiService.get<EventWithTicketInputs>({
       endpoint: `/events/${id}`
+    })
+  }
+
+  async createEvent(payload: CreateEventSchema & { token?: string }) {
+    payload.inputs = JSON.parse(payload.inputs)
+    if (!payload.token) {
+      throw new Error("Token is required")
+    }
+    const base = BaseApiService.withCredentials(payload.token)
+    delete payload.token
+    return base.post<{
+      created: number
+    }>({
+      endpoint: "/events",
+      data: payload
     })
   }
 }

@@ -1,3 +1,6 @@
+import { z } from "zod"
+import { createEventSchema } from "./schema"
+
 export type DynamicInputType =
   | "text"
   | "email"
@@ -77,3 +80,5 @@ export type Attendee = {
   id_line: string
   name: string
 }
+
+export type CreateEventSchema = z.infer<typeof createEventSchema>

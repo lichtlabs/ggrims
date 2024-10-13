@@ -62,6 +62,7 @@ class BaseApiService {
       headers: this.getHeaders(rcfg.headers),
       body: JSON.stringify(rcfg.data)
     })
+
     return await this.handleResponse(response)
   }
 
@@ -122,10 +123,11 @@ class BaseApiService {
     return await this.handleResponse(response)
   }
 
-  withCredentials() {
+  public static withCredentials(token: string) {
     const headers = {
       "Content-Type": "application/json",
-      credentials: "include"
+      credentials: "include",
+      Authorization: `Bearer ${token}`
     }
 
     const baseFn = <T>(
