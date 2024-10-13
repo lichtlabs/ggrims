@@ -3,12 +3,29 @@ import type {
   BuyTicketResponse,
   CreateEventSchema,
   Event,
-  EventWithTicketInputs
+  EventWithTicketInputs,
+  Ticket
 } from "@/lib/types"
 
 class ApiClient {
+  async listTickets(eventId: string) {
+    return BaseApiService.get<
+      Array<
+        Omit<
+          Ticket & {
+            count: number
+          },
+          "id"
+        >
+      >
+    >({
+      endpoint: `/events/${eventId}/tickets`
+    })
+  }
+
   async buyTicket(payload: {
     data: {
+      ticket_name: string
       ticket_amount: number
       attendees: Array<Record<string, FormDataEntryValue>>
     }

@@ -1,6 +1,6 @@
 "use client"
 import apiClient from "@/lib/api-client"
-import { DynamicInput } from "@/lib/types"
+import { DynamicInput, Ticket } from "@/lib/types"
 import { useMutation } from "@tanstack/react-query"
 import { FieldValues, useFieldArray, useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -9,11 +9,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { cn } from "@/lib/utils"
 import { AsteriskIcon } from "lucide-react"
 import { setTimeout } from "timers"
-import { useRouter } from "next/navigation"
 
 type DynFormProps = {
   inputs: Array<DynamicInput>
   eventId: string
+  ticket?: Ticket & { count: number }
 }
 
 const getTicketFormSchema = z.object({
@@ -23,8 +23,9 @@ const getTicketFormSchema = z.object({
 
 type GetTicketFormSchema = z.infer<typeof getTicketFormSchema>
 
-export default function DynForm({ inputs, eventId }: DynFormProps) {
-  const router = useRouter()
+export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
+  const serviceFee = 1000 // 1000 Rupiah
+
   const form = useForm<GetTicketFormSchema>({
     resolver: zodResolver(getTicketFormSchema),
     defaultValues: {
@@ -41,7 +42,12 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
   const getTicketMutation = useMutation({
     mutationFn: apiClient.buyTicket,
     onSuccess: (data: any) => {
-      toast("Thanks for your purchases!")
+      toast(
+        "Thanks for your purchases! Your ticket will be sent to your email soon.",
+        {
+          duration: 120000
+        }
+      )
       setTimeout(() => {
         // redirect to data?.data.link_url
         if (!data) {
@@ -59,6 +65,7 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
   const onSubmit = async (data: FieldValues) => {
     const payload = {
       data: {
+        ticket_name: ticket?.name,
         attendees: data.attendees,
         ticket_amount: parseInt(data.ticketCount)
       },
@@ -69,6 +76,10 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
 
   console.log("@input state errors:", form.formState.errors)
 
+  const totalPrice =
+    parseInt(form.watch("ticketCount")) * serviceFee +
+    parseInt(ticket?.price || "0") * parseInt(form.watch("ticketCount"))
+
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
       <div className="col-span-6">
@@ -76,10 +87,19 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
           htmlFor="ticketCount"
           className="block text-sm font-medium text-gray-700"
         >
-          Ticket Amount
+          Ticket Amount{" "}
         </label>
         <input
           {...form.register("ticketCount")}
+          // validation with tocket count
+          onChange={(e) => {
+            form.setValue(
+              "ticketCount",
+              parseInt(e.target.value) > (ticket && ticket?.count)
+                ? ""
+                : e.target.value
+            )
+          }}
           type="number"
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 sm:text-sm"
         />
@@ -106,7 +126,9 @@ export default function DynForm({ inputs, eventId }: DynFormProps) {
           fields.length > parseInt(form.watch("ticketCount")) && "text-red-500"
         )}
       >
-        {fields.length} of {form.watch("ticketCount") || 0} Ticket
+        {fields.length} of {form.watch("ticketCount") || 0} Ticket + Service Fee
+        ={" IDR "}
+        {Number.isNaN(totalPrice) ? 0 : totalPrice.toLocaleString()}
       </h2>
       {fields.map((field, index) => (
         <div key={field.id} className="col-span-6 space-y-6">
