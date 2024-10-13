@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { createEventSchema } from "./schema"
+import { createEventSchema, createTicketSchema } from "./schema"
 
 export type DynamicInputType =
   | "text"
@@ -82,3 +82,5 @@ export type Attendee = {
 }
 
 export type CreateEventSchema = z.infer<typeof createEventSchema>
+
+export type CreateTicketSchema = z.infer<typeof createTicketSchema>

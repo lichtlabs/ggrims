@@ -2,6 +2,7 @@ import BaseApiService from "./base-api"
 import type {
   BuyTicketResponse,
   CreateEventSchema,
+  CreateTicketSchema,
   Event,
   EventWithTicketInputs,
   Ticket
@@ -20,6 +21,24 @@ class ApiClient {
       >
     >({
       endpoint: `/events/${eventId}/tickets`
+    })
+  }
+
+  async createTicket(payload: CreateTicketSchema & { token?: string }) {
+    payload.benefits = JSON.parse(payload.benefits)
+    if (!payload.token) {
+      throw new Error("Token is required")
+    }
+    const base = BaseApiService.withCredentials(payload.token)
+    const eventId = payload.eventId
+    delete payload.token
+    delete payload.eventId
+    ;(payload as any).ticket_count = parseInt(payload.ticket_count)
+    return base.post<{
+      created: number
+    }>({
+      endpoint: `/events/${eventId}/tickets/create`,
+      data: payload
     })
   }
 

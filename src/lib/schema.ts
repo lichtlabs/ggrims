@@ -7,14 +7,13 @@ export const createEventSchema = z.object({
   event_start_date: z.string(),
   event_end_date: z.string(),
   inputs: z.string()
-  // inputs: z.array(
-  //   z.object({
-  //     name: z.string(),
-  //     label: z.string(),
-  //     type: z.string(),
-  //     placeholder: z.string(),
-  //     required: z.boolean(),
-  //     options: z.array(z.object({ label: z.string(), value: z.string() }))
-  //   })
-  // )
+})
+
+export const createTicketSchema = z.object({
+  eventId: z.string().optional(),
+  name: z.string(),
+  description: z.string(),
+  price: z.string(),
+  benefits: z.string(),
+  ticket_count: z.string()
 })
