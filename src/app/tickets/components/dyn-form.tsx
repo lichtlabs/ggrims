@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import { createApiClient } from "@/lib/api-client"
 import { Ticket } from "@/lib/types"

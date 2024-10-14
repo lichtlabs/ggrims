@@ -26,7 +26,7 @@ export default function CreateEvent() {
         return {data: {created: 0}, message: ""}
       }
 
-      const res = await createApiClient().eventsv1.CreateEvent({
+      const res = await createApiClient(token).eventsv1.CreateEvent({
         name: data.name,
         description: data.description,
         location: data.location,
