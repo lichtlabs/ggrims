@@ -2,21 +2,22 @@
 import { truncate } from "@/lib/utils"
 import GetTicketButton from "./get-ticket-button"
 import { useQuery } from "@tanstack/react-query"
-import apiClient from "@/lib/api-client"
 import { format } from "date-fns"
+import { createApiClient } from "@/lib/api-client"
+import type { Event } from "@/lib/types"
 
 export default function EventsList() {
   const { data } = useQuery({
     queryKey: ["upcoming-events"],
-    queryFn: () => apiClient.getUpcomingEvents(),
+    queryFn: () => createApiClient().eventsv1.ListUpcomingEvents(),
     refetchOnWindowFocus: false
   })
 
-  console.log("@data", data)
+  const events = data?.data as unknown as Event[]
 
   return (
     <>
-      {data?.data?.map((event) => (
+      {events?.map((event) => (
         <li key={event.id} className="border-b border-black/[.08] pb-4">
           <div className="relative flex justify-between">
             <div>

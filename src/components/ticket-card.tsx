@@ -53,7 +53,7 @@ export function TicketCard({
       </CardHeader>
       <CardContent className="relative p-6">
         <div className="mb-6">
-          {ticket.description.split("\\n").map((line, index) => (
+          {ticket?.description?.split("\\n").map((line, index) => (
             <p key={index} className="mb-2 text-sm text-muted-foreground">
               {line}
             </p>
@@ -77,7 +77,7 @@ export function TicketCard({
         <Separator className="my-4" />
         <h4 className="mb-2 text-sm font-semibold">Benefits:</h4>
         <ul className="space-y-2">
-          {ticket.benefits.map((benefit, index) => (
+          {ticket?.benefits?.map((benefit, index) => (
             <li key={index} className="flex items-start">
               <Check className="mr-2 mt-1 h-4 w-4 flex-shrink-0 text-green-500" />
               <span className="text-sm">{benefit}</span>

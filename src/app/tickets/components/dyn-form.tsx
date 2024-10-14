@@ -1,6 +1,6 @@
 "use client"
-import apiClient from "@/lib/api-client"
-import { DynamicInput, Ticket } from "@/lib/types"
+import { createApiClient } from "@/lib/api-client"
+import { Ticket } from "@/lib/types"
 import { useMutation } from "@tanstack/react-query"
 import { FieldValues, useFieldArray, useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -9,9 +9,10 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { cn } from "@/lib/utils"
 import { AsteriskIcon } from "lucide-react"
 import { setTimeout } from "timers"
+import { eventsv1 } from "@/lib/base-api-client"
 
 type DynFormProps = {
-  inputs: Array<DynamicInput>
+  inputs: eventsv1.EventTicketInput[]
   eventId: string
   ticket?: Omit<Ticket, "id"> & { count: number }
 }
@@ -40,7 +41,8 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
   })
 
   const getTicketMutation = useMutation({
-    mutationFn: apiClient.buyTicket,
+    mutationFn: (data: { eventId: string; data: eventsv1.BuyTicketRequest }) =>
+      createApiClient().eventsv1.BuyTickets(data.eventId, data.data),
     onSuccess: (data: any) => {
       toast(
         "Thanks for your purchases! Your ticket will be sent to your email soon.",
@@ -53,6 +55,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
         if (!data) {
           return
         }
+        form.reset()
         const redirectUrl = "https://" + data?.data.link_url
         window.open(redirectUrl, "_blank")
       }, 1000)
@@ -70,7 +73,11 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
         ticket_amount: parseInt(data.ticketCount)
       },
       eventId
+    } as {
+      data: eventsv1.BuyTicketRequest
+      eventId: string
     }
+
     getTicketMutation.mutate(payload)
   }
 

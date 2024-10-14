@@ -1,5 +1,4 @@
 "use client"
-import apiClient from "@/lib/api-client"
 import { createEventSchema } from "@/lib/schema"
 import { CreateEventSchema } from "@/lib/types"
 import { useAuth } from "@clerk/nextjs"
@@ -8,6 +7,8 @@ import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { format } from "date-fns"
+import { createApiClient } from "@/lib/api-client"
+import { eventsv1 } from "@/lib/base-api-client"
 
 export default function CreateEvent() {
   const { getToken } = useAuth()
@@ -16,9 +17,31 @@ export default function CreateEvent() {
   })
 
   const createEventMutation = useMutation({
-    mutationFn: apiClient.createEvent,
+    mutationFn: async (
+      data: CreateEventSchema
+    ): Promise<eventsv1.BaseResponse<eventsv1.InsertionResponse>> => {
+      const token = await getToken()
+      if (!token) {
+        toast("Please login to create an event")
+        return {data: {created: 0}, message: ""}
+      }
+
+      const res = await createApiClient().eventsv1.CreateEvent({
+        name: data.name,
+        description: data.description,
+        location: data.location,
+        // timestamptz format
+        event_start_date: format(
+          data.event_start_date,
+          "yyyy-MM-dd'T'HH:mm:ssXXX"
+        ),
+        event_end_date: format(data.event_end_date, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+        inputs: JSON.parse(data.inputs)
+      })
+      return res
+    },
     onSuccess: (data) => {
-      toast(`${data?.data?.created || 0} events created`)
+      toast(`${data.data.created || 0} events created`)
     },
     onError: (err) => {
       toast(err.message)
@@ -26,21 +49,13 @@ export default function CreateEvent() {
   })
 
   const onSubmit = async (data: CreateEventSchema) => {
-    const token = await getToken()
-    if (!token) {
-      toast("Please login to create an event")
-      return
-    }
-
     createEventMutation.mutate({
-      ...data,
-      event_end_date: (
-        format(data.event_end_date, "yyyy-MM-dd HH:mm:ss") + "+07:00"
-      ).replace(" ", "T"),
-      event_start_date: (
-        format(data.event_start_date, "yyyy-MM-dd HH:mm:ss") + "+07:00"
-      ).replace(" ", "T"),
-      token
+      name: data.name,
+      description: data.description,
+      location: data.location,
+      event_start_date: data.event_start_date,
+      event_end_date: data.event_end_date,
+      inputs: data.inputs
     })
   }
 

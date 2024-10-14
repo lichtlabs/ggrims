@@ -19,18 +19,6 @@ export type DynamicInputType =
   | "search"
   | "tel"
 
-export type DynamicInput = {
-  name: string
-  label: string
-  type: DynamicInputType
-  placeholder?: string
-  options?: Array<{
-    label: string
-    value: string
-  }>
-  required?: boolean
-}
-
 export type Event = {
   id: string
   name: string
@@ -52,10 +40,6 @@ export type Ticket = {
   status: "available" | "pending" | "sold"
   created_at: Date
   updated_at: Date
-}
-
-export type EventWithTicketInputs = Event & {
-  inputs: Array<DynamicInput>
 }
 
 export type BuyTicketResponse = {

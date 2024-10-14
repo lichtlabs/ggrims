@@ -1,5 +1,5 @@
 "use client"
-import apiClient from "@/lib/api-client"
+import { createApiClient } from "@/lib/api-client"
 import { createTicketSchema } from "@/lib/schema"
 import { CreateTicketSchema } from "@/lib/types"
 import { useAuth } from "@clerk/nextjs"
@@ -17,13 +17,13 @@ export default function CreateTickets() {
   const { data } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
-      const res = await apiClient.getUpcomingEvents()
+      const res = await createApiClient().eventsv1.ListUpcomingEvents()
       if (!res?.data) {
         return []
       }
       const options = res?.data?.map((event) => ({
         label: event.name,
-        value: event.id
+        value: event.id as unknown as string
       }))
 
       return options as Array<{ label: string; value: string }>
@@ -39,12 +39,16 @@ export default function CreateTickets() {
         return
       }
 
-      const payload = {
-        ...data,
-        token
-      }
-
-      return await apiClient.createTicket(payload)
+      return await createApiClient(token).eventsv1.CreateTickets(
+        form.getValues("eventId") || "",
+        {
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          benefits: JSON.parse(data.benefits),
+          ticket_count: parseInt(data.ticket_count)
+        }
+      )
     },
     onSuccess: (data) => {
       toast(`${data?.data?.created || 0} tickets created`)
@@ -55,18 +59,7 @@ export default function CreateTickets() {
   })
 
   const onSubmit = async (data: CreateTicketSchema) => {
-    const token = await getToken()
-    if (!token) {
-      toast("Please login to create an event")
-      return
-    }
-
-    const payload = {
-      ...data,
-      token
-    }
-
-    createTicketMutation.mutate(payload)
+    createTicketMutation.mutate(data)
   }
 
   console.log("fw", form.watch())

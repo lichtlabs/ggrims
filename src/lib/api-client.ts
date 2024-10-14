@@ -1,89 +1,15 @@
-import BaseApiService from "./base-api"
-import type {
-  BuyTicketResponse,
-  CreateEventSchema,
-  CreateTicketSchema,
-  Event,
-  EventWithTicketInputs,
-  Ticket
-} from "@/lib/types"
+import Client from "./base-api-client"
 
-class ApiClient {
-  async listTickets(eventId: string) {
-    return BaseApiService.get<
-      Array<
-        Omit<
-          Ticket & {
-            count: number
-          },
-          "id"
-        >
-      >
-    >({
-      endpoint: `/events/${eventId}/tickets`
-    })
-  }
-
-  async createTicket(payload: CreateTicketSchema & { token?: string }) {
-    payload.benefits = JSON.parse(payload.benefits)
-    if (!payload.token) {
-      throw new Error("Token is required")
+export const createApiClient = (token?: string) => {
+  const client = new Client(process.env.NEXT_PUBLIC_APP_ENV || 'development', {
+    auth: token,
+    requestInit: {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      }
     }
-    const base = BaseApiService.withCredentials(payload.token)
-    const eventId = payload.eventId
-    delete payload.token
-    delete payload.eventId
-    ;(payload as any).ticket_count = parseInt(payload.ticket_count)
-    return base.post<{
-      created: number
-    }>({
-      endpoint: `/events/${eventId}/tickets/create`,
-      data: payload
-    })
-  }
+  })
 
-  async buyTicket(payload: {
-    data: {
-      ticket_name?: string
-      ticket_amount: number
-      attendees: Array<Record<string, FormDataEntryValue>>
-    }
-    eventId: string
-  }) {
-    return BaseApiService.post<BuyTicketResponse>({
-      endpoint: `/events/${payload.eventId}/tickets/buy`,
-      data: payload.data
-    })
-  }
-
-  async getUpcomingEvents() {
-    return BaseApiService.get<Array<Event>>({
-      endpoint: "upcoming-events"
-    })
-  }
-
-  async getEvent(id: string) {
-    return BaseApiService.get<EventWithTicketInputs>({
-      endpoint: `/events/${id}`
-    })
-  }
-
-  async createEvent(payload: CreateEventSchema & { token?: string }) {
-    payload.inputs = JSON.parse(payload.inputs)
-    if (!payload.token) {
-      throw new Error("Token is required")
-    }
-    const base = BaseApiService.withCredentials(payload.token)
-    delete payload.token
-    return base.post<{
-      created: number
-    }>({
-      endpoint: "/events",
-      data: payload
-    })
-  }
+  return client
 }
-
-const apiClient = new ApiClient()
-
-export default apiClient

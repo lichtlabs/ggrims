@@ -1,9 +1,10 @@
 "use client"
 import { TicketCard } from "@/components/ticket-card"
 import DynForm from "../components/dyn-form"
-import apiClient from "@/lib/api-client"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
+import { createApiClient } from "@/lib/api-client"
+import { Ticket } from "@/lib/types"
 
 type EventTicketPageProps = {
   params: {
@@ -14,53 +15,58 @@ type EventTicketPageProps = {
 export default function EventTicketPage({ params }: EventTicketPageProps) {
   const [selectedTicketIndex, setSelectedTicketIndex] = useState(0)
 
-  const { data } = useQuery({
+  const { data: eventRes } = useQuery({
     queryKey: ["event", params.eventId],
-    queryFn: () => apiClient.getEvent(params.eventId),
+    queryFn: () => createApiClient().eventsv1.GetEvent(params.eventId),
     refetchOnWindowFocus: false,
     enabled: !!params.eventId
   })
 
-  const { data: tickets } = useQuery({
+  const { data: ticketsRes } = useQuery({
     queryKey: ["tickets", params.eventId],
-    queryFn: () => apiClient.listTickets(params.eventId),
+    queryFn: () =>
+      createApiClient().eventsv1.ListDistinctTickets(params.eventId),
     refetchOnWindowFocus: false,
     enabled: !!params.eventId,
     // 5 seconds
     refetchInterval: 5 * 1000
   })
 
+  const event = eventRes?.data
+  const tickets = ticketsRes?.data as unknown as Array<
+    Omit<Ticket, "id"> & { count: number }
+  >
+
+  console.log(event)
+
   return (
     <div className="mx-auto max-w-lg space-y-8 py-8">
-      <h1 className="text-2xl font-bold">{data?.data?.name}</h1>
-      <p>{data?.data?.description}</p>
+      <h1 className="text-2xl font-bold">{event?.name}</h1>
+      <p>{event?.description}</p>
       <hr className="border-gray-600" />
       <h2 className="text-lg font-bold">Select a ticket</h2>
       <div className="grid gap-4">
         {!!tickets &&
-          !!tickets.data &&
-          tickets?.data.map((ticket) => (
+          tickets?.map((ticket) => (
             <button
               key={ticket.name}
               onClick={() =>
-                setSelectedTicketIndex(tickets?.data?.indexOf(ticket) || 0)
+                setSelectedTicketIndex(tickets?.indexOf(ticket) || 0)
               }
               className="w-full text-left"
             >
               <TicketCard
                 ticket={ticket}
-                selected={
-                  selectedTicketIndex === tickets?.data?.indexOf(ticket)
-                }
+                selected={selectedTicketIndex === tickets?.indexOf(ticket)}
               />
             </button>
           ))}
       </div>
-      {!!data?.data?.inputs && (
+      {!!event?.inputs && (
         <DynForm
           eventId={params.eventId}
-          ticket={tickets?.data?.[selectedTicketIndex]}
-          inputs={data?.data?.inputs}
+          ticket={tickets && tickets[selectedTicketIndex]}
+          inputs={event.inputs}
         />
       )}
     </div>
