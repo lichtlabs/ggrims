@@ -30,7 +30,6 @@ export function PreviewEnv(pr: number | string): BaseURL {
  * Client is an API client for the ggrims-service-6yei Encore application.
  */
 export default class Client {
-    public readonly events: events.ServiceClient
     public readonly eventsv1: eventsv1.ServiceClient
 
 
@@ -58,7 +57,6 @@ export default class Client {
         }
 
         const base = new BaseClient(target, options ?? {})
-        this.events = new events.ServiceClient(base)
         this.eventsv1 = new eventsv1.ServiceClient(base)
     }
 }
@@ -85,272 +83,6 @@ export interface ClientOptions {
      * These tokens will be sent as bearer tokens in the Authorization header.
      */
     auth?: string | AuthDataGenerator
-}
-
-export namespace events {
-    export type Attendee = { [key: string]: string }
-
-    /**
-     * BaseResponse represents a base response
-     */
-    export interface BaseResponse<T> {
-        data: T
-        message: string
-    }
-
-    /**
-     * BuyTicketRequest represents a request to buy a ticket
-     */
-    export interface BuyTicketRequest {
-        "ticket_name": string
-        "ticket_amount": number
-        attendees: Attendee[]
-    }
-
-    /**
-     * BuyTicketResponse represents a response to buy a ticket
-     */
-    export interface BuyTicketResponse {
-    }
-
-    /**
-     * CreateEventRequest represents a request to create an event
-     */
-    export interface CreateEventRequest {
-        name: string
-        description: string
-        location: string
-        "event_start_date": string
-        "event_end_date": string
-        inputs: EventTicketInput[]
-    }
-
-    /**
-     * CreateEventResponse represents a response to create an event
-     */
-    export interface CreateEventResponse {
-        created: number
-    }
-
-    /**
-     * CreateTicketRequest represents a request to create a ticket for admin
-     */
-    export interface CreateTicketRequest {
-        name: string
-        description: string
-        price: string
-        benefits: string[]
-        /**
-         * Amount of tickets to create
-         */
-        "ticket_count": number
-    }
-
-    /**
-     * CreateTicketResponse represents a response to create a ticket for admin
-     */
-    export interface CreateTicketResponse {
-        created: number
-    }
-
-    /**
-     * DeleteEventResponse represents a response to delete an event
-     */
-    export interface DeleteEventResponse {
-        deleted: number
-    }
-
-    /**
-     * Event represents an event
-     */
-    export interface Event {
-        id: string
-        name: string
-        description: string
-        location: string
-        "event_start_date": string
-        "event_end_date": string
-        "created_at": string
-        "updated_at": string
-    }
-
-    export interface EventTicketInput {
-        name: string
-        label: string
-        type: string
-        placeholder: string
-        required: boolean
-        options: {
-            label: string
-            value: string
-        }[]
-    }
-
-    /**
-     * EventWithTicketInputs represents an event with ticket inputs
-     */
-    export interface EventWithTicketInputs {
-        inputs: EventTicketInput[]
-    }
-
-    /**
-     * ListEventsQuery represents a query to list events
-     */
-    export interface ListEventsQuery {
-        Page: number
-        Limit: number
-        Search: string
-        OrderBy: string
-    }
-
-    /**
-     * ListEventsResponse represents a response to list events
-     */
-    export interface ListEventsResponse {
-        events: Event[]
-        meta: Metadata
-    }
-
-    /**
-     * ListTicketsResponse represents a response to list tickets
-     */
-    export interface ListTicketsResponse {
-        "event_id": string
-        name: string
-        description: string
-        price: string
-        benefits: string[]
-        status: string
-        "created_at": string
-        "updated_at": string
-        count: number
-    }
-
-    /**
-     * Metadata represents metadata for a response
-     */
-    export interface Metadata {
-        "current_page": number
-        "next_page": number
-        "total_pages": number
-        "total_count": number
-        limit: number
-    }
-
-    /**
-     * UpdateEventRequest represents a request to update an event
-     */
-    export interface UpdateEventRequest {
-        name: string
-        description: string
-        location: string
-        "event_start_date": string
-        "event_end_date": string
-    }
-
-    /**
-     * UpdateEventResponse represents a response to update an event
-     */
-    export interface UpdateEventResponse {
-        updated: number
-    }
-
-    export class ServiceClient {
-        private baseClient: BaseClient
-
-        constructor(baseClient: BaseClient) {
-            this.baseClient = baseClient
-        }
-
-        /**
-         * BuyTicket buys a ticket
-         */
-        public async BuyTicket(id: string, params: BuyTicketRequest): Promise<BaseResponse<BuyTicketResponse>> {
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callAPI("POST", `/events/${encodeURIComponent(id)}/tickets/buy`, JSON.stringify(params))
-            return await resp.json() as BaseResponse<BuyTicketResponse>
-        }
-
-        /**
-         * CreateEvent creates an event
-         */
-        public async CreateEvent(params: CreateEventRequest): Promise<BaseResponse<CreateEventResponse>> {
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callAPI("POST", `/events`, JSON.stringify(params))
-            return await resp.json() as BaseResponse<CreateEventResponse>
-        }
-
-        /**
-         * CreateTicket creates tickets for admin in bulk
-         */
-        public async CreateTicket(id: string, params: CreateTicketRequest): Promise<BaseResponse<CreateTicketResponse>> {
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callAPI("POST", `/events/${encodeURIComponent(id)}/tickets/create`, JSON.stringify(params))
-            return await resp.json() as BaseResponse<CreateTicketResponse>
-        }
-
-        /**
-         * DeleteEvent deletes an event
-         */
-        public async DeleteEvent(id: string): Promise<BaseResponse<DeleteEventResponse>> {
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callAPI("DELETE", `/events/${encodeURIComponent(id)}`)
-            return await resp.json() as BaseResponse<DeleteEventResponse>
-        }
-
-        /**
-         * GetEvent gets an event
-         */
-        public async GetEvent(id: string): Promise<BaseResponse<EventWithTicketInputs>> {
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callAPI("GET", `/events/${encodeURIComponent(id)}`)
-            return await resp.json() as BaseResponse<EventWithTicketInputs>
-        }
-
-        /**
-         * ListEvents lists events
-         */
-        public async ListEvents(params: ListEventsQuery): Promise<BaseResponse<ListEventsResponse>> {
-            // Convert our params into the objects we need for the request
-            const query = makeRecord<string, string | string[]>({
-                limit:      String(params.Limit),
-                "order_by": params.OrderBy,
-                page:       String(params.Page),
-                search:     params.Search,
-            })
-
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callAPI("GET", `/events`, undefined, {query})
-            return await resp.json() as BaseResponse<ListEventsResponse>
-        }
-
-        /**
-         * ListTickets get distinct tickets by its name
-         */
-        public async ListTickets(id: string): Promise<BaseResponse<ListTicketsResponse[]>> {
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callAPI("GET", `/events/${encodeURIComponent(id)}/tickets`)
-            return await resp.json() as BaseResponse<ListTicketsResponse[]>
-        }
-
-        /**
-         * ListUpcomingEvents lists upcoming events
-         */
-        public async ListUpcomingEvents(): Promise<BaseResponse<Event[]>> {
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callAPI("GET", `/upcoming-events`)
-            return await resp.json() as BaseResponse<Event[]>
-        }
-
-        /**
-         * UpdateEvent updates an event
-         */
-        public async UpdateEvent(id: string, params: UpdateEventRequest): Promise<BaseResponse<UpdateEventResponse>> {
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callAPI("PUT", `/events/${encodeURIComponent(id)}`, JSON.stringify(params))
-            return await resp.json() as BaseResponse<UpdateEventResponse>
-        }
-    }
 }
 
 export namespace eventsv1 {
@@ -427,6 +159,18 @@ export namespace eventsv1 {
         created: number
     }
 
+    export interface ListDistinctTicketsResponse {
+        "event_id": pgtype.UUID
+        name: string
+        description: string
+        price: string
+        benefits: string[]
+        status: db.TicketStatus
+        "created_at": pgtype.Timestamptz
+        "updated_at": pgtype.Timestamptz
+        count: number
+    }
+
     export interface ListQuery {
         Page: number
         Limit: number
@@ -453,7 +197,7 @@ export namespace eventsv1 {
         }
 
         /**
-         * Buy tickets for an event
+         * BuyTickets Buy tickets for an event
          */
         public async BuyTickets(id: string, params: BuyTicketRequest): Promise<BaseResponse<BuyTicketResponse>> {
             // Now make the actual call to the API
@@ -469,7 +213,7 @@ export namespace eventsv1 {
         }
 
         /**
-         * Create an event
+         * CreateEvent Create an event
          */
         public async CreateEvent(params: CreateEventRequest): Promise<BaseResponse<InsertionResponse>> {
             // Now make the actual call to the API
@@ -478,7 +222,7 @@ export namespace eventsv1 {
         }
 
         /**
-         * Create tickets for an event
+         * CreateTickets Create tickets for an event
          */
         public async CreateTickets(id: string, params: CreateTicketRequest): Promise<BaseResponse<InsertionResponse>> {
             // Now make the actual call to the API
@@ -487,14 +231,14 @@ export namespace eventsv1 {
         }
 
         /**
-         * Delete an event
+         * DeleteEvent Delete an event
          */
         public async DeleteEvent(id: string): Promise<void> {
             await this.baseClient.callAPI("DELETE", `/v1/events/${encodeURIComponent(id)}`)
         }
 
         /**
-         * Delete tickets on an event
+         * DeleteTickets Delete tickets on an event
          */
         public async DeleteTickets(id: string, params: DeleteTicketRequest): Promise<BaseResponse<DeletesResponse>> {
             // Convert our params into the objects we need for the request
@@ -508,7 +252,7 @@ export namespace eventsv1 {
         }
 
         /**
-         * Get an event including ticket inputs
+         * GetEvent Get an event including ticket inputs
          */
         public async GetEvent(id: string): Promise<BaseResponse<Event>> {
             // Now make the actual call to the API
@@ -517,16 +261,16 @@ export namespace eventsv1 {
         }
 
         /**
-         * Get distinct tickets for an event
+         * ListDistinctTickets Get distinct tickets for an event
          */
-        public async ListDistinctTickets(id: string): Promise<BaseResponse<db.ListDistinctTicketRow[]>> {
+        public async ListDistinctTickets(id: string): Promise<BaseResponse<ListDistinctTicketsResponse[]>> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callAPI("GET", `/v1/events/${encodeURIComponent(id)}/tickets/distinct`)
-            return await resp.json() as BaseResponse<db.ListDistinctTicketRow[]>
+            return await resp.json() as BaseResponse<ListDistinctTicketsResponse[]>
         }
 
         /**
-         * List attendees on an event
+         * ListEventAttendees List attendees on an event
          */
         public async ListEventAttendees(id: string, params: ListQuery): Promise<BaseResponse<db.ListAttendeeRow[]>> {
             // Convert our params into the objects we need for the request
@@ -542,7 +286,7 @@ export namespace eventsv1 {
         }
 
         /**
-         * Get all events including ticket inputs
+         * ListEvents Get all events including ticket inputs
          */
         public async ListEvents(params: ListQuery): Promise<BaseResponse<Event[]>> {
             // Convert our params into the objects we need for the request
@@ -558,7 +302,7 @@ export namespace eventsv1 {
         }
 
         /**
-         * Get all upcoming events including ticket inputs
+         * ListUpcomingEvents Get all upcoming events including ticket inputs
          */
         public async ListUpcomingEvents(): Promise<BaseResponse<Event[]>> {
             // Now make the actual call to the API
@@ -567,14 +311,14 @@ export namespace eventsv1 {
         }
 
         /**
-         * Update an event
+         * UpdateEvent Update an event
          */
         public async UpdateEvent(id: string, params: db.UpdateEventParams): Promise<void> {
             await this.baseClient.callAPI("PUT", `/v1/events/${encodeURIComponent(id)}`, JSON.stringify(params))
         }
 
         /**
-         * Update tickets for an event
+         * UpdateTickets Update tickets for an event
          */
         public async UpdateTickets(id: string, params: UpdateTicketRequest): Promise<BaseResponse<UpdatesResponse>> {
             // Now make the actual call to the API
@@ -592,18 +336,6 @@ export namespace db {
         Data: string
         CreatedAt: pgtype.Timestamptz
         UpdatedAt: pgtype.Timestamptz
-    }
-
-    export interface ListDistinctTicketRow {
-        EventID: pgtype.UUID
-        Name: string
-        Description: string
-        Price: string
-        Benefits: string
-        Status: TicketStatus
-        CreatedAt: pgtype.Timestamptz
-        UpdatedAt: pgtype.Timestamptz
-        Count: number
     }
 
     export type TicketStatus = string
@@ -749,7 +481,8 @@ export class StreamInOut<Request, Response> {
     }
 
     async next(): Promise<Response | undefined> {
-        for await (const next of this) return next;
+        let next
+        for await (next of this) return next;
         return undefined;
     }
 
@@ -782,7 +515,8 @@ export class StreamIn<Response> {
     }
 
     async next(): Promise<Response | undefined> {
-        for await (const next of this) return next;
+        let next
+        for await (next of this) return next;
         return undefined;
     }
 
@@ -800,7 +534,7 @@ export class StreamIn<Response> {
 
 export class StreamOut<Request, Response> {
     public socket: WebSocketConnection;
-    private responseValue: Promise<Response>;
+    private readonly responseValue: Promise<Response>;
 
     constructor(url: string, headers?: Record<string, string>) {
         let responseResolver: (_: any) => void;

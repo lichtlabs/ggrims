@@ -1,16 +1,17 @@
 import type { Metadata } from "next"
+import React from "react"
+import { createApiClient } from "@/lib/api-client"
 
 export async function generateMetadata({
   params
 }: {
   params: { eventId: string }
 }): Promise<Metadata> {
-  const eventId = params.eventId
-  // const event = await getEvent(eventId)
+  const event = await createApiClient().eventsv1.GetEvent(params.eventId)
 
   return {
-    title: "Get ticket",
-    description: "Get ticket for an event"
+    title: event.data.name,
+    description: event.data.description,
   }
 }
 

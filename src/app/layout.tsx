@@ -4,6 +4,7 @@ import * as fonts from "@/lib/fonts"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
 import QueryProvider from "./query-provider"
+import React from "react"
 
 export const metadata: Metadata = {
   title: {
