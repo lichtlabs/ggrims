@@ -16,7 +16,7 @@ export const Local: BaseURL = "http://localhost:4000"
  * Environment returns a BaseURL for calling the cloud environment with the given name.
  */
 export function Environment(name: string): BaseURL {
-    return `https://${name}-ggrims-service-6yei.encr.app`
+    return `https://${name}-ggrims-services-xixi.encr.app`
 }
 
 /**
@@ -27,7 +27,7 @@ export function PreviewEnv(pr: number | string): BaseURL {
 }
 
 /**
- * Client is an API client for the ggrims-service-6yei Encore application.
+ * Client is an API client for the ggrims-services-xixi Encore application.
  */
 export default class Client {
     public readonly eventsv1: eventsv1.ServiceClient
@@ -481,8 +481,7 @@ export class StreamInOut<Request, Response> {
     }
 
     async next(): Promise<Response | undefined> {
-        let next
-        for await (next of this) return next;
+        for await (const next of this) return next;
         return undefined;
     }
 
@@ -515,8 +514,7 @@ export class StreamIn<Response> {
     }
 
     async next(): Promise<Response | undefined> {
-        let next
-        for await (next of this) return next;
+        for await (const next of this) return next;
         return undefined;
     }
 
@@ -534,7 +532,7 @@ export class StreamIn<Response> {
 
 export class StreamOut<Request, Response> {
     public socket: WebSocketConnection;
-    private readonly responseValue: Promise<Response>;
+    private responseValue: Promise<Response>;
 
     constructor(url: string, headers?: Record<string, string>) {
         let responseResolver: (_: any) => void;
@@ -601,7 +599,7 @@ class BaseClient {
         // Add User-Agent header if the script is running in the server
         // because browsers do not allow setting User-Agent headers to requests
         if (typeof window === "undefined") {
-            this.headers["User-Agent"] = "ggrims-service-6yei-Generated-TS-Client (Encore/v1.41.11)";
+            this.headers["User-Agent"] = "ggrims-services-xixi-Generated-TS-Client (Encore/v1.41.11)";
         }
 
         this.requestInit = options.requestInit ?? {};
