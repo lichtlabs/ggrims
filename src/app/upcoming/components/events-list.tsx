@@ -17,6 +17,11 @@ export default function EventsList() {
 
   return (
     <>
+      {!events?.length && (
+        <p>
+          There are no events yet.
+        </p>
+      )}
       {events?.map((event) => (
         <li key={event.id} className="border-b border-black/[.08] pb-4">
           <div className="relative flex justify-between">
