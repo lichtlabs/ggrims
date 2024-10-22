@@ -9,7 +9,7 @@ import type { Event } from "@/lib/types"
 export default function EventsList() {
   const { data } = useQuery({
     queryKey: ["upcoming-events"],
-    queryFn: () => createApiClient().eventsv1.ListUpcomingEvents(),
+    queryFn: () => createApiClient().events.ListUpcomingEvents(),
     refetchOnWindowFocus: false
   })
 
@@ -17,6 +17,11 @@ export default function EventsList() {
 
   return (
     <>
+      {!events?.length && (
+        <p>
+          There are no events yet.
+        </p>
+      )}
       {events?.map((event) => (
         <li key={event.id} className="border-b border-black/[.08] pb-4">
           <div className="relative flex justify-between">

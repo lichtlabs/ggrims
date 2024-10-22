@@ -16,6 +16,7 @@ export const Local: BaseURL = "http://localhost:4000"
  * Environment returns a BaseURL for calling the cloud environment with the given name.
  */
 export function Environment(name: string): BaseURL {
+    if (name == 'local') return Local
     return `https://${name}-ggrims-services-xixi.encr.app`
 }
 
@@ -30,7 +31,7 @@ export function PreviewEnv(pr: number | string): BaseURL {
  * Client is an API client for the ggrims-services-xixi Encore application.
  */
 export default class Client {
-    public readonly eventsv1: eventsv1.ServiceClient
+    public readonly events: events.ServiceClient
 
 
     /**
@@ -57,7 +58,7 @@ export default class Client {
         }
 
         const base = new BaseClient(target, options ?? {})
-        this.eventsv1 = new eventsv1.ServiceClient(base)
+        this.events = new events.ServiceClient(base)
     }
 }
 
@@ -85,14 +86,14 @@ export interface ClientOptions {
     auth?: string | AuthDataGenerator
 }
 
-export namespace eventsv1 {
+export namespace events {
     export interface BaseResponse<T> {
         data: T
         message: string
     }
 
     /**
-     * BuyTicketRequest represents a request to buy a ticket
+     * BuyTicketRequest represents the payload required to purchase tickets for an event.
      */
     export interface BuyTicketRequest {
         "ticket_name": string
@@ -101,7 +102,7 @@ export namespace eventsv1 {
     }
 
     /**
-     * BuyTicketResponse represents a response to buy a ticket
+     * BuyTicketResponse combines the data of a ticket purchase and the billing response.
      */
     export interface BuyTicketResponse {
     }
@@ -115,15 +116,25 @@ export namespace eventsv1 {
         inputs: EventTicketInput[]
     }
 
+    /**
+     * CreateTicketRequest represents a request to create a new ticket for an event. It includes the ticket's name,
+     * description, price, associated benefits, and the total number of tickets to create.
+     */
     export interface CreateTicketRequest {
         name: string
         description: string
         price: string
         benefits: string[]
         "ticket_count": number
+        min: number
+        max: number
     }
 
+    /**
+     * DeleteTicketRequest represents a request to delete a specified number of tickets by name.
+     */
     export interface DeleteTicketRequest {
+        "ticket_name": string
         "ticket_count": number
     }
 
@@ -166,6 +177,8 @@ export namespace eventsv1 {
         price: string
         benefits: string[]
         status: db.TicketStatus
+        min: number
+        max: number
         "created_at": pgtype.Timestamptz
         "updated_at": pgtype.Timestamptz
         count: number
@@ -177,6 +190,9 @@ export namespace eventsv1 {
         OrderBy: string
     }
 
+    /**
+     * UpdateTicketRequest represents a request structure for updating ticket information.
+     */
     export interface UpdateTicketRequest {
         name: string
         description: string
@@ -197,7 +213,7 @@ export namespace eventsv1 {
         }
 
         /**
-         * BuyTickets Buy tickets for an event
+         * BuyTickets processes the ticket purchase request, handles the database transaction, and manages billing for the tickets.
          */
         public async BuyTickets(id: string, params: BuyTicketRequest): Promise<BaseResponse<BuyTicketResponse>> {
             // Now make the actual call to the API
@@ -206,7 +222,7 @@ export namespace eventsv1 {
         }
 
         /**
-         * Callback is the callback endpoint for flip to hit when a payment data was changed
+         * Callback handles the HTTP request for processing a payment callback, updating the database, and changing ticket statuses.
          */
         public async Callback(method: "POST", body?: BodyInit, options?: CallParameters): Promise<Response> {
             return this.baseClient.callAPI(method, `/payments/callback`, body, options)
@@ -222,7 +238,9 @@ export namespace eventsv1 {
         }
 
         /**
-         * CreateTickets Create tickets for an event
+         * CreateTickets creates multiple tickets for an event and inserts them into the database within a transaction.
+         * It takes a context, event ID (UUID), and a CreateTicketRequest object as input.
+         * Returns a BaseResponse containing the count of created tickets and a success message, or an error if operation fails.
          */
         public async CreateTickets(id: string, params: CreateTicketRequest): Promise<BaseResponse<InsertionResponse>> {
             // Now make the actual call to the API
@@ -238,12 +256,14 @@ export namespace eventsv1 {
         }
 
         /**
-         * DeleteTickets Delete tickets on an event
+         * DeleteTickets removes a specified number of tickets based on the given `DeleteTicketRequest`.
+         * It returns a `BaseResponse` containing `DeletesResponse` with the number of deleted tickets or an error.
          */
         public async DeleteTickets(id: string, params: DeleteTicketRequest): Promise<BaseResponse<DeletesResponse>> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 "ticket_count": String(params["ticket_count"]),
+                "ticket_name":  params["ticket_name"],
             })
 
             // Now make the actual call to the API
@@ -261,7 +281,8 @@ export namespace eventsv1 {
         }
 
         /**
-         * ListDistinctTickets Get distinct tickets for an event
+         * ListDistinctTickets retrieves a list of distinct tickets based on a given event ID.
+         * It returns a BaseResponse containing a list of ListDistinctTicketsResponse or an error if the operation fails.
          */
         public async ListDistinctTickets(id: string): Promise<BaseResponse<ListDistinctTicketsResponse[]>> {
             // Now make the actual call to the API
@@ -318,7 +339,7 @@ export namespace eventsv1 {
         }
 
         /**
-         * UpdateTickets Update tickets for an event
+         * UpdateTickets updates a specified number of tickets in the database within a single transaction.
          */
         public async UpdateTickets(id: string, params: UpdateTicketRequest): Promise<BaseResponse<UpdatesResponse>> {
             // Now make the actual call to the API

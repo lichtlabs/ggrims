@@ -38,6 +38,8 @@ export type Ticket = {
   price: string
   benefits: Array<string>
   status: "available" | "pending" | "sold"
+  min: number
+  max: number
   created_at: Date
   updated_at: Date
 }

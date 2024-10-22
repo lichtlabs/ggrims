@@ -11,6 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { Check, Clock, Tag, Ticket } from "lucide-react"
+import Markdown from "react-markdown"
 
 interface TicketProps {
   eventId: string
@@ -52,18 +53,21 @@ export function TicketCard({
       </CardHeader>
       <CardContent className="relative p-6">
         <div className="mb-6">
-          {ticket?.description?.split("\\n").map((line, index) => (
-            <p key={index} className="mb-2 text-sm text-muted-foreground">
-              {line}
-            </p>
-          ))}
+          {/*{ticket?.description?.split("\\n").map((line, index) => (*/}
+          {/*  <p key={index} className="mb-2 text-sm text-muted-foreground">*/}
+          {/*    {line}*/}
+          {/*  </p>*/}
+          {/*))}*/}
+          <Markdown className='[&>*>li]:list-disc [&>ul>li]:list-inside'>
+            {ticket?.description}
+          </Markdown>
         </div>
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center">
             <Tag className="mr-2 h-4 w-4" />
             <span className="font-bold md:text-xl">
-              {/* IDR {Number(ticket.price).toLocaleString()} */}
-              IDR {`"Redacted"`}
+               IDR {Number(ticket.price).toLocaleString()}
+              {/*IDR {`"Redacted"`}*/}
             </span>
           </div>
           <div className="flex items-center">
