@@ -8,10 +8,12 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { format } from "date-fns"
 import { createApiClient } from "@/lib/api-client"
-import { eventsv1 } from "@/lib/base-api-client"
+import { events } from "@/lib/base-api-client"
+import { useRouter } from "next/navigation"
 
 export default function CreateEvent() {
   const { getToken } = useAuth()
+  const router = useRouter()
   const form = useForm<CreateEventSchema>({
     resolver: zodResolver(createEventSchema)
   })
@@ -19,14 +21,14 @@ export default function CreateEvent() {
   const createEventMutation = useMutation({
     mutationFn: async (
       data: CreateEventSchema
-    ): Promise<eventsv1.BaseResponse<eventsv1.InsertionResponse>> => {
+    ): Promise<events.BaseResponse<events.InsertionResponse>> => {
       const token = await getToken()
       if (!token) {
         toast("Please login to create an event")
         return {data: {created: 0}, message: ""}
       }
 
-      const res = await createApiClient(token).eventsv1.CreateEvent({
+      const res = await createApiClient(token).events.CreateEvent({
         name: data.name,
         description: data.description,
         location: data.location,
@@ -38,10 +40,12 @@ export default function CreateEvent() {
         event_end_date: format(data.event_end_date, "yyyy-MM-dd'T'HH:mm:ssXXX"),
         inputs: JSON.parse(data.inputs)
       })
+
       return res
     },
     onSuccess: (data) => {
       toast(`${data.data.created || 0} events created`)
+      setTimeout(() => router.push("/upcoming"), 200)
     },
     onError: (err) => {
       toast(err.message)

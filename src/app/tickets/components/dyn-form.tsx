@@ -10,10 +10,10 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { cn } from "@/lib/utils"
 import { AsteriskIcon } from "lucide-react"
 import { setTimeout } from "timers"
-import { eventsv1 } from "@/lib/base-api-client"
+import { events } from "@/lib/base-api-client"
 
 type DynFormProps = {
-  inputs: eventsv1.EventTicketInput[]
+  inputs: events.EventTicketInput[]
   eventId: string
   ticket?: Omit<Ticket, "id"> & { count: number }
 }
@@ -42,8 +42,8 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
   })
 
   const getTicketMutation = useMutation({
-    mutationFn: (data: { eventId: string; data: eventsv1.BuyTicketRequest }) =>
-      createApiClient().eventsv1.BuyTickets(data.eventId, data.data),
+    mutationFn: (data: { eventId: string; data: events.BuyTicketRequest }) =>
+      createApiClient().events.BuyTickets(data.eventId, data.data),
     onSuccess: (data: any) => {
       toast(
         "Thanks for your purchases! Your ticket will be sent to your email soon.",
@@ -75,7 +75,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
       },
       eventId
     } as {
-      data: eventsv1.BuyTicketRequest
+      data: events.BuyTicketRequest
       eventId: string
     }
 
@@ -87,6 +87,9 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
   const totalPrice =
     parseInt(form.watch("ticketCount")) * serviceFee +
     parseInt(ticket?.price || "0") * parseInt(form.watch("ticketCount"))
+
+  const minAttendanceTimesTicketCount = (ticket?.min == 1 ? ticket?.min : (ticket?.min || 1) * (parseInt((form.watch("ticketCount"))) || 0))
+  const dataOverflow = fields.length > minAttendanceTimesTicketCount
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -116,7 +119,9 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
       <div className="flex items-center">
         <button
           type="button"
-          disabled={fields.length === Number(form.getValues("ticketCount"))}
+          disabled={
+            minAttendanceTimesTicketCount == fields.length
+          }
           onClick={() => prepend({})}
           className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring disabled:opacity-50"
         >
@@ -131,10 +136,10 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
       </div>
       <h2
         className={cn(
-          fields.length > parseInt(form.watch("ticketCount")) && "text-red-500"
+          dataOverflow && "text-red-500"
         )}
       >
-        {fields.length} of {form.watch("ticketCount") || 0} Ticket + Service Fee
+        Fill {ticket?.min == 1 ? ticket?.min : (ticket?.min || 1) * (parseInt((form.watch("ticketCount"))) || 0)} data for {form.watch("ticketCount") || 0} Ticket + Service Fee
         ={" IDR "}
         {Number.isNaN(totalPrice) ? 0 : totalPrice.toLocaleString()}
       </h2>

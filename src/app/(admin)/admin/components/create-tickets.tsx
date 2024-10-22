@@ -7,9 +7,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 export default function CreateTickets() {
   const { getToken } = useAuth()
+  const router = useRouter()
   const form = useForm<CreateTicketSchema>({
     resolver: zodResolver(createTicketSchema)
   })
@@ -17,7 +19,7 @@ export default function CreateTickets() {
   const { data } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
-      const res = await createApiClient().eventsv1.ListUpcomingEvents()
+      const res = await createApiClient().events.ListUpcomingEvents()
       if (!res?.data) {
         return []
       }
@@ -39,19 +41,22 @@ export default function CreateTickets() {
         return
       }
 
-      return await createApiClient(token).eventsv1.CreateTickets(
+      return await createApiClient(token).events.CreateTickets(
         form.getValues("eventId") || "",
         {
           name: data.name,
           description: data.description,
           price: data.price,
           benefits: JSON.parse(data.benefits),
-          ticket_count: parseInt(data.ticket_count)
+          ticket_count: parseInt(data.ticket_count),
+          min: parseInt(data.min),
+          max: parseInt(data.max)
         }
       )
     },
     onSuccess: (data) => {
       toast(`${data?.data?.created || 0} tickets created`)
+      setTimeout(() => router.push("/upcoming"), 200)
     },
     onError: (err) => {
       toast(err.message)
@@ -132,6 +137,31 @@ export default function CreateTickets() {
         </label>
         <textarea
           {...form.register("benefits")}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 sm:text-sm"
+        />
+      </div>
+      <div className="col-span-6">
+        <label
+          htmlFor="min"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Min People
+        </label>
+        <input
+          {...form.register("min")}
+          type="number"
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 sm:text-sm"
+        />
+      </div><div className="col-span-6">
+        <label
+          htmlFor="max"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Max People
+        </label>
+        <input
+          {...form.register("max")}
+          type="number"
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 sm:text-sm"
         />
       </div>

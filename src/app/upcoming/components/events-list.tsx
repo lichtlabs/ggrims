@@ -9,7 +9,7 @@ import type { Event } from "@/lib/types"
 export default function EventsList() {
   const { data } = useQuery({
     queryKey: ["upcoming-events"],
-    queryFn: () => createApiClient().eventsv1.ListUpcomingEvents(),
+    queryFn: () => createApiClient().events.ListUpcomingEvents(),
     refetchOnWindowFocus: false
   })
 

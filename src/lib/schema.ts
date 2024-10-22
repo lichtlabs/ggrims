@@ -15,5 +15,7 @@ export const createTicketSchema = z.object({
   description: z.string(),
   price: z.string(),
   benefits: z.string(),
-  ticket_count: z.string()
+  ticket_count: z.string(),
+  min: z.string(),
+  max: z.string(),
 })

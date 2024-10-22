@@ -7,7 +7,7 @@ export async function generateMetadata({
 }: {
   params: { eventId: string }
 }): Promise<Metadata> {
-  const event = await createApiClient().eventsv1.GetEvent(params.eventId)
+  const event = await createApiClient().events.GetEvent(params.eventId)
 
   return {
     title: event.data.name,
