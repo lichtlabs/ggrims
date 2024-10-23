@@ -33,9 +33,9 @@ export default function EventsList() {
               </p>
               <p className="text-sm">{truncate(event.description, 54)}</p>
             </div>
-            <div className="absolute right-0">
-              <GetTicketButton eventId={event.id} />
-            </div>
+          </div>
+          <div className="w-full mt-4">
+            <GetTicketButton eventId={event.id} />
           </div>
         </li>
       ))}
