@@ -10,8 +10,14 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import { Check, Clock, Tag, Ticket } from "lucide-react"
+import { Check, Clock, Tag, Ticket, ChevronDown } from "lucide-react"
 import Markdown from "react-markdown"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/ui/accordion"
 
 interface TicketProps {
   eventId: string
@@ -25,10 +31,14 @@ interface TicketProps {
 
 export function TicketCard({
   ticket,
-  selected
+  selected,
+  isAccordionOpen,
+  onAccordionToggle
 }: {
   ticket: TicketProps
   selected: boolean
+  isAccordionOpen: boolean
+  onAccordionToggle: (isOpen: boolean) => void
 }) {
   const statusColor = {
     available: "bg-green-500",
@@ -43,69 +53,70 @@ export function TicketCard({
         selected && "ring-2 ring-indigo-600"
       )}
     >
-      <CardHeader className="border-b bg-muted/40 p-4">
+      <CardHeader className="border-b bg-muted/40 p-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-bold">{ticket.name}</CardTitle>
-          <Badge variant="secondary" className="uppercase">
+          <CardTitle className="text-base font-semibold">
+            {ticket.name}
+          </CardTitle>
+          <Badge variant="secondary" className="text-xs uppercase">
             {ticket.status}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="relative p-6">
-        <div className="mb-6">
-          {/*{ticket?.description?.split("\\n").map((line, index) => (*/}
-          {/*  <p key={index} className="mb-2 text-sm text-muted-foreground">*/}
-          {/*    {line}*/}
-          {/*  </p>*/}
-          {/*))}*/}
-          <Markdown className='[&>*>li]:list-disc [&>ul>li]:list-inside'>
+      <CardContent className="relative p-4">
+        <div className="mb-4">
+          <Markdown className="prose prose-sm [&>*>li]:list-disc [&>ul>li]:list-inside">
             {ticket?.description}
           </Markdown>
         </div>
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center">
-            <Tag className="mr-2 h-4 w-4" />
-            <span className="font-bold md:text-xl">
-               IDR {Number(ticket.price).toLocaleString()}
-              {/*IDR {`"Redacted"`}*/}
+            <Tag className="mr-1 h-3 w-3" />
+            <span className="text-sm font-semibold">
+              IDR {Number(ticket.price).toLocaleString()}
             </span>
           </div>
           <div className="flex items-center">
-            <Ticket className="mr-2 h-4 w-4" />
-            <span className="text-sm font-medium">
-              {ticket.count} available
-            </span>
+            <Ticket className="mr-1 h-3 w-3" />
+            <span className="text-xs">{ticket.count} available</span>
           </div>
         </div>
-        <Separator className="my-4" />
-        <h4 className="mb-2 text-sm font-semibold">Benefits:</h4>
-        <ul className="space-y-2">
-          {ticket?.benefits?.map((benefit, index) => (
-            <li key={index} className="flex items-start">
-              <Check className="mr-2 mt-1 h-4 w-4 flex-shrink-0 text-green-500" />
-              <span className="text-sm">{benefit}</span>
-            </li>
-          ))}
-        </ul>
+        <Separator className="mt-3" />
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full"
+          value={isAccordionOpen ? "benefits" : ""}
+          onValueChange={(value) => onAccordionToggle(value === "benefits")}
+        >
+          <AccordionItem value="benefits">
+            <AccordionTrigger className="py-2 text-xs font-medium">
+              See Benefits
+            </AccordionTrigger>
+            <AccordionContent>
+              <ul className="mt-1 space-y-1">
+                {ticket?.benefits?.map((benefit, index) => (
+                  <li key={index} className="flex items-start">
+                    <Check className="mr-1 mt-0.5 h-3 w-3 flex-shrink-0 text-green-500" />
+                    <span className="text-xs">{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </CardContent>
-      <CardFooter className="bg-muted/20 p-4">
+      <CardFooter className="bg-muted/20 px-4 py-2">
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center">
-            <Clock className="mr-2 h-4 w-4" />
-            <span className="text-sm text-muted-foreground">
+            <Clock className="mr-1 h-3 w-3" />
+            <span className="text-xs text-muted-foreground">
               Limited time offer
             </span>
           </div>
-          {/* <Button variant="default">
-            {ticket.status === "available"
-              ? "Select"
-              : ticket.status === "pending"
-                ? "Sold Out"
-                : "Sold Out"}
-          </Button> */}
         </div>
       </CardFooter>
-      <div className={`h-1 w-full ${statusColor[ticket.status]}`} />
+      <div className={`h-0.5 w-full ${statusColor[ticket.status]}`} />
     </Card>
   )
 }
