@@ -6,6 +6,7 @@ import { useState } from "react"
 import { createApiClient } from "@/lib/api-client"
 import { Ticket } from "@/lib/types"
 import Markdown from "react-markdown"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type EventTicketPageProps = {
   params: {
@@ -16,17 +17,16 @@ type EventTicketPageProps = {
 export default function EventTicketPage({ params }: EventTicketPageProps) {
   const [selectedTicketIndex, setSelectedTicketIndex] = useState(0)
 
-  const { data: eventRes } = useQuery({
+  const { data: eventRes, isLoading: isEventLoading } = useQuery({
     queryKey: ["event", params.eventId],
     queryFn: () => createApiClient().events.GetEvent(params.eventId),
     refetchOnWindowFocus: false,
     enabled: !!params.eventId
   })
 
-  const { data: ticketsRes } = useQuery({
+  const { data: ticketsRes, isLoading: isTicketsLoading } = useQuery({
     queryKey: ["tickets", params.eventId],
-    queryFn: () =>
-      createApiClient().events.ListDistinctTickets(params.eventId),
+    queryFn: () => createApiClient().events.ListDistinctTickets(params.eventId),
     refetchOnWindowFocus: false,
     enabled: !!params.eventId,
     // 5 seconds
@@ -38,37 +38,55 @@ export default function EventTicketPage({ params }: EventTicketPageProps) {
     Omit<Ticket, "id"> & { count: number }
   >
 
-  console.log(event)
+  const isLoading = isEventLoading || isTicketsLoading
 
   return (
     <div className="mx-auto max-w-lg space-y-8 py-8">
-      <h1 className="text-2xl font-bold">{event?.name}</h1>
-      <Markdown>{event?.description}</Markdown>
-      <hr className="border-gray-600" />
-      <h2 className="text-lg font-bold">Select a ticket</h2>
-      <div className="grid gap-4">
-        {!!tickets &&
-          tickets?.map((ticket) => (
-            <button
-              key={ticket.name}
-              onClick={() =>
-                setSelectedTicketIndex(tickets?.indexOf(ticket) || 0)
-              }
-              className="w-full text-left"
-            >
-              <TicketCard
-                ticket={ticket}
-                selected={selectedTicketIndex === tickets?.indexOf(ticket)}
-              />
-            </button>
-          ))}
-      </div>
-      {!!event?.inputs && (
-        <DynForm
-          eventId={params.eventId}
-          ticket={tickets && tickets[selectedTicketIndex]}
-          inputs={event.inputs}
-        />
+      {!isLoading && (
+        <>
+          <h1 className="text-2xl font-bold">{event?.name}</h1>
+          <Markdown>{event?.description}</Markdown>
+          <hr className="border-gray-600" />
+          <h2 className="text-lg font-bold">Select a ticket</h2>
+          <div className="grid gap-4">
+            {!!tickets &&
+              tickets?.map((ticket) => (
+                <button
+                  key={ticket.name}
+                  onClick={() =>
+                    setSelectedTicketIndex(tickets?.indexOf(ticket) || 0)
+                  }
+                  className="w-full text-left"
+                >
+                  <TicketCard
+                    ticket={ticket}
+                    selected={selectedTicketIndex === tickets?.indexOf(ticket)}
+                  />
+                </button>
+              ))}
+          </div>
+          {!!event?.inputs && (
+            <DynForm
+              eventId={params.eventId}
+              ticket={tickets && tickets[selectedTicketIndex]}
+              inputs={event.inputs}
+            />
+          )}
+        </>
+      )}
+      {isLoading && (
+        <>
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-24 w-full" />
+          <hr className="border-gray-600" />
+          <Skeleton className="h-6 w-1/2" />
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-24 w-full" />
+            ))}
+          </div>
+          <Skeleton className="h-48 w-full" />
+        </>
       )}
     </div>
   )
