@@ -19,6 +19,7 @@ import {
   CarouselNext,
   CarouselPrevious
 } from "@/components/ui/carousel"
+import { useRouter } from "next/navigation"
 
 type EventTicketPageProps = {
   params: {
@@ -27,6 +28,7 @@ type EventTicketPageProps = {
 }
 
 export default function EventTicketPage({ params }: EventTicketPageProps) {
+  const router = useRouter()
   const [selectedTicketIndex, setSelectedTicketIndex] = useState(0)
   const [api, setApi] = useState<CarouselApi>()
   const [isAccordionOpen, setIsAccordionOpen] = useState(false)
@@ -65,7 +67,11 @@ export default function EventTicketPage({ params }: EventTicketPageProps) {
 
   return (
     <div className="container mx-auto max-w-xl py-6">
-      <Button variant="ghost" className="mb-2 text-sm">
+      <Button
+        variant="ghost"
+        className="mb-2 text-sm"
+        onClick={() => router.push("/upcoming")}
+      >
         <ArrowLeft className="mr-1 h-3 w-3" /> Back to Events
       </Button>
 

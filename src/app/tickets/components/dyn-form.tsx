@@ -8,9 +8,10 @@ import { toast } from "sonner"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { cn } from "@/lib/utils"
-import { AsteriskIcon } from "lucide-react"
+import { AsteriskIcon, Loader2 } from "lucide-react"
 import { setTimeout } from "timers"
 import { events } from "@/lib/base-api-client"
+import { useState } from "react"
 
 type DynFormProps = {
   inputs: events.EventTicketInput[]
@@ -27,6 +28,7 @@ type GetTicketFormSchema = z.infer<typeof getTicketFormSchema>
 
 export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
   const serviceFee = 1000 // 1000 Rupiah
+  const [newWindow, setNewWindow] = useState<Window | null>(null)
 
   const form = useForm<GetTicketFormSchema>({
     resolver: zodResolver(getTicketFormSchema),
@@ -46,27 +48,35 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
       createApiClient().events.BuyTickets(data.eventId, data.data),
     onSuccess: (data: any) => {
       toast(
-        "Thanks for your purchases! Your ticket will be sent to your email soon.",
+        "Thanks for your purchase! Your ticket will be sent to your email soon.",
         {
           duration: 120000
         }
       )
-      setTimeout(() => {
-        // redirect to data?.data.link_url
-        if (!data) {
-          return
+
+      if (data?.data.link_url) {
+        const redirectUrl = "https://" + data.data.link_url
+        if (newWindow) {
+          newWindow.location.href = redirectUrl
+        } else {
+          window.open(redirectUrl, "_blank")
         }
-        form.reset()
-        const redirectUrl = "https://" + data?.data.link_url
-        window.open(redirectUrl, "_blank")
-      }, 1000)
+      }
+
+      form.reset()
     },
     onError: (err) => {
       toast(err.message)
+      if (newWindow) {
+        newWindow.close()
+      }
     }
   })
 
   const onSubmit = async (data: FieldValues) => {
+    const newWin = window.open("about:blank", "_blank")
+    setNewWindow(newWin)
+
     const payload = {
       data: {
         ticket_name: ticket?.name,
@@ -82,13 +92,14 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
     getTicketMutation.mutate(payload)
   }
 
-  console.log("@input state errors:", form.formState.errors)
-
   const totalPrice =
     parseInt(form.watch("ticketCount")) * serviceFee +
     parseInt(ticket?.price || "0") * parseInt(form.watch("ticketCount"))
 
-  const minAttendanceTimesTicketCount = (ticket?.min == 1 ? ticket?.min : (ticket?.min || 1) * (parseInt((form.watch("ticketCount"))) || 0))
+  const minAttendanceTimesTicketCount =
+    ticket?.min == 1
+      ? ticket?.min
+      : (ticket?.min || 1) * (parseInt(form.watch("ticketCount")) || 0)
   const dataOverflow = fields.length > minAttendanceTimesTicketCount
 
   return (
@@ -120,7 +131,8 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
         <button
           type="button"
           disabled={
-            minAttendanceTimesTicketCount == fields.length
+            minAttendanceTimesTicketCount == fields.length ||
+            getTicketMutation.isPending
           }
           onClick={() => prepend({})}
           className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring disabled:opacity-50"
@@ -128,19 +140,24 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
           Add Another
         </button>
         <button
+          disabled={getTicketMutation.isPending}
           type="submit"
           className="focus:ring-primary-500 hover:bg-primary-700 ml-2 inline-flex w-full items-center justify-center rounded-md border bg-transparent px-4 py-2 text-sm font-medium text-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
         >
-          Continue &rarr;
+          Continue {!getTicketMutation.isPending && <>&rarr; </>}
+          {getTicketMutation.isPending && (
+            <Loader2 className="ml-3 h-3 w-3 animate-spin" />
+          )}
         </button>
       </div>
-      <h2
-        className={cn(
-          dataOverflow && "text-red-500"
-        )}
-      >
-        Fill {ticket?.min == 1 ? ticket?.min : (ticket?.min || 1) * (parseInt((form.watch("ticketCount"))) || 0)} data for {form.watch("ticketCount") || 0} Ticket + Service Fee
-        ={" IDR "}
+      <h2 className={cn(dataOverflow && "text-red-500")}>
+        Fill{" "}
+        {ticket?.min == 1
+          ? ticket?.min
+          : (ticket?.min || 1) *
+            (parseInt(form.watch("ticketCount")) || 0)}{" "}
+        data for {form.watch("ticketCount") || 0} Ticket + Service Fee =
+        {" IDR "}
         {Number.isNaN(totalPrice) ? 0 : totalPrice.toLocaleString()}
       </h2>
       {fields.map((field, index) => (
@@ -272,6 +289,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
           <div className="flex items-center">
             <button
               type="button"
+              disabled={getTicketMutation.isPending}
               onClick={() => remove(index)}
               className="focus:ring-indigosm inline-flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
