@@ -45,8 +45,8 @@ export default function EventTicketPage({ params }: EventTicketPageProps) {
     queryFn: () => createApiClient().events.ListDistinctTickets(params.eventId),
     refetchOnWindowFocus: false,
     enabled: !!params.eventId,
-    // 5 seconds
-    refetchInterval: 5 * 1000
+    // 10 seconds
+    refetchInterval: 10 * 1000
   })
 
   const event = eventRes?.data

@@ -25,7 +25,7 @@ export default function CreateEvent() {
       const token = await getToken()
       if (!token) {
         toast("Please login to create an event")
-        return {data: {created: 0}, message: ""}
+        return { data: { created: 0 }, message: "" }
       }
 
       const res = await createApiClient(token).events.CreateEvent({
@@ -45,7 +45,7 @@ export default function CreateEvent() {
     },
     onSuccess: (data) => {
       toast(`${data.data.created || 0} events created`)
-      setTimeout(() => router.push("/upcoming"), 200)
+      setTimeout(() => router.push("/admin/tickets/new"), 200)
     },
     onError: (err) => {
       toast(err.message)
