@@ -8,6 +8,7 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { sendGAEvent } from "@next/third-parties/google"
 
 export default function CreateTickets() {
   const { getToken } = useAuth()
@@ -65,9 +66,15 @@ export default function CreateTickets() {
 
   const onSubmit = async (data: CreateTicketSchema) => {
     createTicketMutation.mutate(data)
-  }
 
-  console.log("fw", form.watch())
+    sendGAEvent({
+      event: "create_ticket",
+      event_id: data.eventId,
+      ticket_name: data.name,
+      ticket_price: data.price,
+      ticket_quantity: data.ticket_count
+    })
+  }
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -152,7 +159,8 @@ export default function CreateTickets() {
           type="number"
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 sm:text-sm"
         />
-      </div><div className="col-span-6">
+      </div>
+      <div className="col-span-6">
         <label
           htmlFor="max"
           className="block text-sm font-medium text-gray-700"

@@ -18,6 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger
 } from "@/components/ui/accordion"
+import { sendGAEvent } from "@next/third-parties/google"
 
 interface TicketProps {
   eventId: string
@@ -46,6 +47,17 @@ export function TicketCard({
     available: "bg-green-500",
     pending: "bg-yellow-500",
     sold: "bg-red-500"
+  }
+
+  const handleAccordionToggle = (value: boolean) => {
+    onAccordionToggle(value)
+    if (value) {
+      sendGAEvent({
+        event: "view_ticket_benefits",
+        ticket_name: ticket.name,
+        ticket_price: ticket.price
+      })
+    }
   }
 
   return (
@@ -89,7 +101,7 @@ export function TicketCard({
           collapsible
           className="w-full"
           value={isAccordionOpen ? "benefits" : ""}
-          onValueChange={(value) => onAccordionToggle(value === "benefits")}
+          onValueChange={(value) => handleAccordionToggle(value === "benefits")}
         >
           <AccordionItem value="benefits">
             <AccordionTrigger className="py-2 text-sm font-medium">

@@ -18,6 +18,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { sendGAEvent } from "@next/third-parties/google"
 
 type DynFormProps = {
   inputs: events.EventTicketInput[]
@@ -65,6 +66,14 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
         link: data?.data.link_url ? `https://${data.data.link_url}` : ""
       })
       setIsDialogOpen(true)
+      sendGAEvent({
+        event: "purchase_ticket",
+        event_id: eventId,
+        ticket_name: ticket?.name,
+        ticket_price: ticket?.price,
+        ticket_quantity: data.ticketCount,
+        total_amount: Number(ticket?.price) * Number(data.ticketCount)
+      })
 
       form.reset()
     },
