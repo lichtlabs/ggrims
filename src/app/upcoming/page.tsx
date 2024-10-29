@@ -1,9 +1,11 @@
 import type { Metadata } from "next"
 import EventsList from "./components/events-list"
+import { commonMetadata } from "@/lib/consts"
 
 export const metadata: Metadata = {
   title: "Upcoming",
-  description: "Welcome to G'GRIMS. Here's what's happening soon."
+  description: "Welcome to GGRIMS. Here's what's happening soon.",
+  ...commonMetadata
 }
 
 export default function UpcomingPage() {

@@ -7,15 +7,16 @@ import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
 import { InfoBanner } from "@/components/info-banner"
 import { GoogleAnalytics } from "@next/third-parties/google"
+import { commonMetadata } from "@/lib/consts"
 
 export const metadata: Metadata = {
   title: {
-    default: "G'GRIMS",
-    absolute: "G'GRIMS",
-    template: "%s | G'GRIMS"
+    default: "GGRIMS",
+    absolute: "GGRIMS",
+    template: "%s | GGRIMS"
   },
-  description:
-    "G'GRIMS 'Great gig running in my scene'. We're an event organizer."
+  description: "Welcome to GGRIMS",
+  ...commonMetadata
 }
 
 export default function RootLayout({
