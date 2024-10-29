@@ -33,11 +33,13 @@ export function TicketCard({
   ticket,
   selected,
   isAccordionOpen,
+  status,
   onAccordionToggle
 }: {
   ticket: TicketProps
   selected: boolean
   isAccordionOpen: boolean
+  status: "available" | "unavailable"
   onAccordionToggle: (isOpen: boolean) => void
 }) {
   const statusColor = {
@@ -59,7 +61,7 @@ export function TicketCard({
             {ticket.name}
           </CardTitle>
           <Badge variant="secondary" className="text-xs uppercase">
-            {ticket.status}
+            {status}
           </Badge>
         </div>
       </CardHeader>
@@ -90,7 +92,7 @@ export function TicketCard({
           onValueChange={(value) => onAccordionToggle(value === "benefits")}
         >
           <AccordionItem value="benefits">
-            <AccordionTrigger className="py-2 text-xs font-medium">
+            <AccordionTrigger className="py-2 text-sm font-medium">
               See Benefits
             </AccordionTrigger>
             <AccordionContent>
@@ -98,7 +100,7 @@ export function TicketCard({
                 {ticket?.benefits?.map((benefit, index) => (
                   <li key={index} className="flex items-start">
                     <Check className="mr-1 mt-0.5 h-3 w-3 flex-shrink-0 text-green-500" />
-                    <span className="text-xs">{benefit}</span>
+                    <span className="text-sm">{benefit}</span>
                   </li>
                 ))}
               </ul>

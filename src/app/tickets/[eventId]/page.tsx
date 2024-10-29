@@ -120,6 +120,9 @@ export default function EventTicketPage({ params }: EventTicketPageProps) {
                         <CarouselItem key={ticket.name}>
                           <div className="p-1">
                             <TicketCard
+                              status={
+                                ticket.count > 0 ? "available" : "unavailable"
+                              }
                               ticket={ticket}
                               selected={selectedTicketIndex === index}
                               isAccordionOpen={
