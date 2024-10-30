@@ -20,6 +20,7 @@ import {
   CarouselPrevious
 } from "@/components/ui/carousel"
 import { useRouter } from "next/navigation"
+import { SwipeInstruction } from "@/components/swipe-instruction"
 
 type EventTicketPageProps = {
   params: {
@@ -108,37 +109,40 @@ export default function EventTicketPage({ params }: EventTicketPageProps) {
             </CardHeader>
             <CardContent>
               {tickets && tickets.length > 0 && (
-                <Carousel
-                  setApi={setApi}
-                  opts={{ align: "start", loop: false }}
-                  className="w-full"
-                >
-                  <CarouselContent>
-                    {tickets
-                      ?.sort((a, b) => Number(a.price) - Number(b.price))
-                      .map((ticket, index) => (
-                        <CarouselItem key={ticket.name}>
-                          <div className="p-1">
-                            <TicketCard
-                              status={
-                                ticket.count > 0 ? "available" : "unavailable"
-                              }
-                              ticket={ticket}
-                              selected={selectedTicketIndex === index}
-                              isAccordionOpen={
-                                isAccordionOpen && selectedTicketIndex === index
-                              }
-                              onAccordionToggle={(isOpen) =>
-                                setIsAccordionOpen(isOpen)
-                              }
-                            />
-                          </div>
-                        </CarouselItem>
-                      ))}
-                  </CarouselContent>
-                  <CarouselPrevious />
-                  <CarouselNext />
-                </Carousel>
+                <div className="relative">
+                  <SwipeInstruction />
+                  <Carousel
+                    setApi={setApi}
+                    opts={{ align: "start", loop: false }}
+                    className="w-full"
+                  >
+                    <CarouselContent>
+                      {tickets
+                        ?.sort((a, b) => Number(a.price) - Number(b.price))
+                        .map((ticket, index) => (
+                          <CarouselItem key={ticket.name}>
+                            <div className="p-1">
+                              <TicketCard
+                                status={
+                                  ticket.count > 0 ? "available" : "unavailable"
+                                }
+                                ticket={ticket}
+                                selected={selectedTicketIndex === index}
+                                isAccordionOpen={
+                                  isAccordionOpen && selectedTicketIndex === index
+                                }
+                                onAccordionToggle={(isOpen) =>
+                                  setIsAccordionOpen(isOpen)
+                                }
+                              />
+                            </div>
+                          </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <CarouselPrevious />
+                    <CarouselNext />
+                  </Carousel>
+                </div>
               )}
             </CardContent>
           </Card>

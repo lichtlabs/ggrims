@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import { Check, Clock, Tag, Ticket, ChevronDown } from "lucide-react"
+import { Check, Clock, Tag, Ticket } from "lucide-react"
 import Markdown from "react-markdown"
 import {
   Accordion,
