@@ -6,8 +6,7 @@ export default function GetTicketButton({ eventId }: { eventId: string }) {
   const router = useRouter()
 
   function navigate() {
-    sendGAEvent({
-      event: "select_event",
+    sendGAEvent('event', 'select_event', {
       event_id: eventId
     })
     router.push(`/tickets/${eventId}`)

@@ -52,8 +52,7 @@ export function TicketCard({
   const handleAccordionToggle = (value: boolean) => {
     onAccordionToggle(value)
     if (value) {
-      sendGAEvent({
-        event: "view_ticket_benefits",
+      sendGAEvent('event', 'view_ticket_benefits', {
         ticket_name: ticket.name,
         ticket_price: ticket.price
       })

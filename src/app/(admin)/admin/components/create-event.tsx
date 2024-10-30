@@ -63,8 +63,7 @@ export default function CreateEvent() {
       inputs: data.inputs
     })
 
-    sendGAEvent({
-      event: "create_event",
+    sendGAEvent('event', 'create_event', {
       event_name: data.name,
       event_location: data.location
     })

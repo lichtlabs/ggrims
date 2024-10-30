@@ -66,8 +66,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
         link: data?.data.link_url ? `https://${data.data.link_url}` : ""
       })
       setIsDialogOpen(true)
-      sendGAEvent({
-        event: "purchase_ticket",
+      sendGAEvent('event', 'purchase_ticket', {
         event_id: eventId,
         ticket_name: ticket?.name,
         ticket_price: ticket?.price,

@@ -67,8 +67,7 @@ export default function CreateTickets() {
   const onSubmit = async (data: CreateTicketSchema) => {
     createTicketMutation.mutate(data)
 
-    sendGAEvent({
-      event: "create_ticket",
+    sendGAEvent('event', 'create_ticket', {
       event_id: data.eventId,
       ticket_name: data.name,
       ticket_price: data.price,
