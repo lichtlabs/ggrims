@@ -18,7 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger
 } from "@/components/ui/accordion"
-import { sendGAEvent } from "@next/third-parties/google"
+import { sendGTMEvent } from "@next/third-parties/google"
 
 interface TicketProps {
   eventId: string
@@ -54,8 +54,9 @@ export function TicketCard({
   const handleAccordionToggle = (value: boolean) => {
     onAccordionToggle(value)
     if (value) {
-      sendGAEvent('event', 'view_ticket_benefits', {
-        ticket_name: ticket.name,
+        sendGTMEvent({
+          event: 'view_ticket_benefits',
+          ticket_name: ticket.name,
         ticket_price: ticket.price
       })
     }

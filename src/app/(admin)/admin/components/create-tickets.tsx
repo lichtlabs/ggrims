@@ -8,7 +8,7 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { sendGAEvent } from "@next/third-parties/google"
+import { sendGTMEvent } from "@next/third-parties/google"
 
 export default function CreateTickets() {
   const { getToken } = useAuth()
@@ -67,7 +67,8 @@ export default function CreateTickets() {
   const onSubmit = async (data: CreateTicketSchema) => {
     createTicketMutation.mutate(data)
 
-    sendGAEvent('event', 'create_ticket', {
+    sendGTMEvent({
+      event: 'create_ticket',
       event_id: data.eventId,
       ticket_name: data.name,
       ticket_price: data.price,

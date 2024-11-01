@@ -10,7 +10,7 @@ import { format } from "date-fns"
 import { createApiClient } from "@/lib/api-client"
 import { events } from "@/lib/base-api-client"
 import { useRouter } from "next/navigation"
-import { sendGAEvent } from "@next/third-parties/google"
+import { sendGTMEvent } from "@next/third-parties/google"
 
 export default function CreateEvent() {
   const { getToken } = useAuth()
@@ -63,7 +63,8 @@ export default function CreateEvent() {
       inputs: data.inputs
     })
 
-    sendGAEvent('event', 'create_event', {
+    sendGTMEvent({
+      event: 'create_event',
       event_name: data.name,
       event_location: data.location
     })

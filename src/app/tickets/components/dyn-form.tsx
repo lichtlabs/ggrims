@@ -18,7 +18,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { sendGAEvent } from "@next/third-parties/google"
+import { sendGTMEvent } from "@next/third-parties/google"
 
 type DynFormProps = {
   inputs: events.EventTicketInput[]
@@ -66,7 +66,8 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
         link: data?.data.link_url ? `https://${data.data.link_url}` : ""
       })
       setIsDialogOpen(true)
-      sendGAEvent('event', 'purchase_ticket', {
+      sendGTMEvent({
+        event: 'purchase_ticket',
         event_id: eventId,
         ticket_name: ticket?.name,
         ticket_price: ticket?.price,
@@ -107,9 +108,12 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
     parseInt(ticket?.price || "0") * parseInt(form.watch("ticketCount"))
 
   const minAttendance = ticket?.min || 1
+  const maxAttendance = ticket?.max || 1
   const ticketCount = parseInt(form.watch("ticketCount")) || 0
   const minAttendanceTotal = minAttendance * ticketCount
-  const dataOverflow = fields.length > minAttendanceTotal
+  const maxAttendanceTotal = maxAttendance * ticketCount
+  const dataOverflow = fields.length > maxAttendanceTotal
+  const dataUnderflow = fields.length < minAttendanceTotal
 
   return (
     <>
@@ -148,7 +152,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
           <button
             type="button"
             disabled={
-              fields.length >= minAttendanceTotal || getTicketMutation.isPending
+              fields.length >= maxAttendanceTotal || getTicketMutation.isPending
             }
             onClick={() => prepend({})}
             className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring disabled:opacity-50"
@@ -156,7 +160,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
             Add Another
           </button>
           <button
-            disabled={getTicketMutation.isPending}
+            disabled={getTicketMutation.isPending || dataUnderflow}
             type="submit"
             className="focus:ring-primary-500 hover:bg-primary-700 ml-2 inline-flex w-full items-center justify-center rounded-md border bg-transparent px-4 py-2 text-sm font-medium text-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
           >
@@ -166,13 +170,14 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
             )}
           </button>
         </div>
-        <h2 className={cn(dataOverflow && "text-red-500")}>
-          Fill {minAttendanceTotal} data for {ticketCount} Ticket
+        <h2 className={cn(dataOverflow && "text-red-500", dataUnderflow && "text-yellow-500")}>
+          Fill {minAttendanceTotal}-{maxAttendanceTotal} data for {ticketCount} Ticket
           {ticketCount > 1 ? "s" : ""} + Service Fee = IDR{" "}
           {Number.isNaN(totalPrice) ? 0 : totalPrice.toLocaleString()}
         </h2>
         {fields.map((field, index) => (
           <div key={field.id} className="col-span-6 space-y-6">
+            <h3 className="font-medium">Attendee #{fields.length - index}</h3>
             <div className="grid grid-cols-1 gap-4">
               {inputs.map((input) => (
                 <div key={input.name} className="col-span-6">

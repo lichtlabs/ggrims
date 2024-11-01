@@ -6,7 +6,7 @@ import type { Metadata } from "next"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
 import { InfoBanner } from "@/components/info-banner"
-import { GoogleAnalytics } from "@next/third-parties/google"
+import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google"
 import { commonMetadata } from "@/lib/consts"
 
 export const metadata: Metadata = {
@@ -35,6 +35,7 @@ export default function RootLayout({
           <Toaster />
         </QueryProvider>
         <GoogleAnalytics gaId="G-BLB169QSPS" />
+        <GoogleTagManager gtmId="GTM-MKDCHP46" />
       </body>
     </html>
   )
