@@ -28,6 +28,8 @@ interface TicketProps {
   benefits: Array<string>
   status: "available" | "pending" | "sold"
   count: number
+  min: number
+  max: number
 }
 
 export function TicketCard({
@@ -68,9 +70,16 @@ export function TicketCard({
     >
       <CardHeader className="border-b bg-muted/40 p-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-semibold">
-            {ticket.name}
-          </CardTitle>
+          <div className="flex flex-col items-start">
+            <CardTitle className="text-base font-semibold">
+              {ticket.name}
+            </CardTitle>
+            <p>
+              {ticket.min == ticket.max
+                ? `${ticket.min} pax`
+                : `${ticket.min}-${ticket.max} pax`}
+            </p>
+          </div>
           <Badge variant="secondary" className="text-xs uppercase">
             {status}
           </Badge>
