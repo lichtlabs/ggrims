@@ -139,8 +139,8 @@ export default function EventTicketPage({ params }: EventTicketPageProps) {
                           </CarouselItem>
                         ))}
                     </CarouselContent>
-                    <CarouselPrevious />
-                    <CarouselNext />
+                    <CarouselPrevious name="Previous" />
+                    <CarouselNext name="Next" />
                   </Carousel>
                 </div>
               )}

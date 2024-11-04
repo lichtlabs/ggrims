@@ -126,6 +126,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
             Ticket Amount
           </label>
           <input
+            data-testid="ticket_amount"
             {...form.register("ticketCount")}
             onChange={(e) => {
               const value = parseInt(e.target.value)
@@ -150,6 +151,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
         <hr className="border-gray-300" />
         <div className="flex items-center">
           <button
+            name="Add Another"
             type="button"
             disabled={
               fields.length >= maxAttendanceTotal || getTicketMutation.isPending
@@ -163,6 +165,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
             disabled={getTicketMutation.isPending || dataUnderflow}
             type="submit"
             className="focus:ring-primary-500 hover:bg-primary-700 ml-2 inline-flex w-full items-center justify-center rounded-md border bg-transparent px-4 py-2 text-sm font-medium text-primary shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
+            data-testid="submit-button"
           >
             Continue {!getTicketMutation.isPending && <>&rarr; </>}
             {getTicketMutation.isPending && (
@@ -192,6 +195,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
                         </div>
                       </label>
                       <textarea
+                        data-testid={`attendees.${index}.${input.name}`}
                         id={field.id}
                         required={input.required}
                         {...form.register(`attendees.${index}.${input.name}`)}
@@ -211,6 +215,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
                         </div>
                       </label>
                       <select
+                        data-testid={`attendees.${index}.${input.name}`}
                         id={field.id}
                         required={input.required}
                         {...form.register(`attendees.${index}.${input.name}`)}
@@ -226,6 +231,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
                   ) : input.type === "checkbox" ? (
                     <div className="flex items-center">
                       <input
+                        data-testid={`attendees.${index}.${input.name}`}
                         id={field.id}
                         required={input.required}
                         {...form.register(`attendees.${index}.${input.name}`)}
@@ -254,6 +260,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
                         </div>
                       </label>
                       <input
+                        data-testid={`attendees.${index}.${input.name}`}
                         id={field.id}
                         required={input.required}
                         {...form.register(`attendees.${index}.${input.name}`)}
@@ -290,6 +297,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
                         </div>
                       </label>
                       <input
+                        data-testid={`attendees.${index}.${input.name}`}
                         id={field.id}
                         required={input.required}
                         {...form.register(`attendees.${index}.${input.name}`)}
@@ -319,7 +327,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
         ))}
       </form>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} data-testid="success-dialog">
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{dialogContent.title}</DialogTitle>
