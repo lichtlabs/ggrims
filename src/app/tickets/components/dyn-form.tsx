@@ -28,6 +28,7 @@ type DynFormProps = {
 
 const getTicketFormSchema = z.object({
   ticketCount: z.string().min(1),
+  referralCode: z.string().optional(),
   attendees: z.array(z.any()).nonempty("Please add at least one attendee")
 })
 
@@ -46,6 +47,7 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
     resolver: zodResolver(getTicketFormSchema),
     defaultValues: {
       ticketCount: "1",
+      referralCode: "",
       attendees: [{}]
     }
   })
@@ -92,7 +94,8 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
       data: {
         ticket_name: ticket?.name,
         attendees: data.attendees,
-        ticket_amount: parseInt(data.ticketCount)
+        ticket_amount: parseInt(data.ticketCount),
+        referral_code: data.referralCode
       },
       eventId
     } as {
@@ -145,6 +148,21 @@ export default function DynForm({ inputs, eventId, ticket }: DynFormProps) {
             type="number"
             min="1"
             max={ticket?.count}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 sm:text-sm"
+          />
+        </div>
+        <div className="col-span-6">
+          <label
+            htmlFor="referralCode"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Referral Code (optional)
+          </label>
+          <input
+            data-testid="referral_code"
+            {...form.register("referralCode")}
+            type="text"
+            placeholder="Enter referral code"
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 sm:text-sm"
           />
         </div>

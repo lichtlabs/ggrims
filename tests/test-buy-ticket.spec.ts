@@ -18,17 +18,15 @@ test('buy tickets flow', async ({ page }) => {
   await page.getByRole('button', { name: /Get Ticket/i }).first().click();
 
   // Click the carousel-next button until the ticket name is #HCPB28-VVIP
-  await page.getByRole('button', { name: /Next/i }).click();
-  await page.waitForTimeout(500);
-  await page.getByRole('button', { name: /Next/i }).click();
-  await page.waitForTimeout(500);
-  await page.getByRole('button', { name: /Next/i }).click();
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole('button', { name: /Next/i }).click();
+    // Wait for carousel transition to complete
+    await page.waitForTimeout(300);
+  }
 
-  // Wait for ticket form to be visible
-  await page.waitForSelector('form');
-
-  // Set ticket count first
+  // Set and verify ticket count
   await page.getByTestId('ticket_amount').fill('1');
+  await expect(page.getByTestId('ticket_amount')).toHaveValue('1');
 
   // Add attendees data
   const attendees = [
@@ -46,33 +44,44 @@ test('buy tickets flow', async ({ page }) => {
     { name: 'alden', id_line: 'aldenweidanto' }
   ];
 
-  // Add more attendees
-  for (let i = 1; i < attendees.length -1; i++) {
+  // Add attendee fields more efficiently
+  const totalAttendees = attendees.length;
+  for (let i = 0; i < totalAttendees - 1; i++) {
     await page.getByRole('button', { name: /Add Another/i }).click();
     await page.waitForTimeout(500);
+    await page.waitForSelector(`[data-testid="attendees.${i}.name"]`, { state: 'visible' });
   }
 
-  // Fill remaining attendees
-  for (let i = 0; i < attendees.length -1; i++) {
+  // Add additional wait to ensure all fields are ready
+  await page.waitForTimeout(1000);
+
+  // Fill attendee information more efficiently
+  for (let i = 0; i < totalAttendees; i++) {
     await page.getByTestId(`attendees.${i}.name`).fill(attendees[i].name);
     await page.getByTestId(`attendees.${i}.id_line`).fill(attendees[i].id_line);
-    await page.waitForTimeout(500);
   }
 
-  // Submit the form
+  // Verify form is filled correctly
+  for (let i = 0; i < totalAttendees; i++) {
+    await expect(page.getByTestId(`attendees.${i}.name`)).toHaveValue(attendees[i].name);
+    await expect(page.getByTestId(`attendees.${i}.id_line`)).toHaveValue(attendees[i].id_line);
+  }
+
+  // Submit and wait for success
   await page.getByTestId('submit-button').click();
+  await page.waitForSelector('[role="dialog"]', { state: 'visible' });
 
-  // Wait for success dialog
-  await page.waitForTimeout(8000)
-
-  // Click the go to payment page button
+  // Navigate to payment
   await page.getByRole('button', { name: /Go to Payment Page/i }).click();
-
-  // Wait for payment page to be loaded
-  await page.waitForTimeout(8000)
-
-  // fill email and nama lengkap then click bayar button
+  
+  // Wait for payment form and fill details
+  await page.waitForSelector('[data-testid="email"]');
   await page.getByTestId('email').fill('dhiya@gmail.com');
   await page.getByTestId('nama_lengkap').fill('Dhiya');
+  
+  // Verify payment form fields
+  await expect(page.getByTestId('email')).toHaveValue('dhiya@gmail.com');
+  await expect(page.getByTestId('nama_lengkap')).toHaveValue('Dhiya');
+  
   await page.getByRole('button', { name: /Bayar/i }).click();
 });
