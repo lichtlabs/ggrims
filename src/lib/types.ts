@@ -26,6 +26,7 @@ export type Event = {
   location: string
   event_start_date: string
   event_end_date: string
+  disabled: boolean
   created_at: Date
   updated_at: Date
 }
