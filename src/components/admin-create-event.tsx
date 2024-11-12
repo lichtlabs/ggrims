@@ -161,7 +161,7 @@ export function AdminCreateEventComponent() {
       // Handle success (e.g., show a success message)
       console.log("Event created successfully!")
       toast({ title: "Success", description: "Event created successfully!" })
-      // router.push("/events")
+      router.push("/events")
     },
     onError: (error) => {
       // Handle error (e.g., show an error message)
