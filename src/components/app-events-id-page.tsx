@@ -9,30 +9,9 @@ import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@/components/ui/form"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "@/hooks/use-toast"
 
@@ -99,18 +78,12 @@ const event: Event = {
   ]
 }
 
-const createPurchaseSchema = (selectedTicket: {
-  inputs: { key: string; label: string }[]
-}) => {
+const createPurchaseSchema = (selectedTicket: { inputs: { key: string; label: string }[] }) => {
   const baseSchema = {
     ticketType: z.string({
       required_error: "Please select a ticket type."
     }),
-    quantity: z
-      .number()
-      .int()
-      .positive()
-      .max(10, "Maximum 10 tickets per purchase.")
+    quantity: z.number().int().positive().max(10, "Maximum 10 tickets per purchase.")
   }
 
   const inputSchema: Record<string, z.ZodString> = {}
@@ -126,9 +99,7 @@ const createPurchaseSchema = (selectedTicket: {
 
 export function EventDetailComponent() {
   const [selectedTicket, setSelectedTicket] = useState(event.tickets[0])
-  const [purchaseSchema, setPurchaseSchema] = useState(
-    createPurchaseSchema(selectedTicket)
-  )
+  const [purchaseSchema, setPurchaseSchema] = useState(createPurchaseSchema(selectedTicket))
 
   const form = useForm<z.infer<typeof purchaseSchema>>({
     resolver: zodResolver(purchaseSchema),
@@ -190,16 +161,11 @@ export function EventDetailComponent() {
           <Card>
             <CardHeader>
               <CardTitle>Purchase Tickets</CardTitle>
-              <CardDescription>
-                Select your ticket type and quantity
-              </CardDescription>
+              <CardDescription>Select your ticket type and quantity</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-6"
-                >
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <FormField
                     control={form.control}
                     name="ticketType"
@@ -209,13 +175,9 @@ export function EventDetailComponent() {
                         <Select
                           onValueChange={(value) => {
                             field.onChange(value)
-                            const newSelectedTicket =
-                              event.tickets.find((t) => t.id === value) ||
-                              event.tickets[0]
+                            const newSelectedTicket = event.tickets.find((t) => t.id === value) || event.tickets[0]
                             setSelectedTicket(newSelectedTicket)
-                            setPurchaseSchema(
-                              createPurchaseSchema(newSelectedTicket)
-                            )
+                            setPurchaseSchema(createPurchaseSchema(newSelectedTicket))
                             form.reset({ ticketType: value, quantity: 1 })
                           }}
                           defaultValue={field.value}
@@ -233,9 +195,7 @@ export function EventDetailComponent() {
                             ))}
                           </SelectContent>
                         </Select>
-                        <FormDescription>
-                          Choose the type of ticket you want to purchase.
-                        </FormDescription>
+                        <FormDescription>Choose the type of ticket you want to purchase.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -252,15 +212,10 @@ export function EventDetailComponent() {
                             min={1}
                             max={10}
                             {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value))
-                            }
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
                           />
                         </FormControl>
-                        <FormDescription>
-                          Enter the number of tickets you want to purchase (max
-                          10).
-                        </FormDescription>
+                        <FormDescription>Enter the number of tickets you want to purchase (max 10).</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -274,11 +229,7 @@ export function EventDetailComponent() {
                         <FormItem>
                           <FormLabel>{input.label}</FormLabel>
                           <FormControl>
-                            <Input
-                              type={input.type}
-                              placeholder={input.placeholder}
-                              {...field}
-                            />
+                            <Input type={input.type} placeholder={input.placeholder} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -292,9 +243,7 @@ export function EventDetailComponent() {
               </Form>
             </CardContent>
             <CardFooter>
-              <p className="text-sm text-gray-500">
-                By purchasing tickets, you agree to our terms and conditions.
-              </p>
+              <p className="text-sm text-gray-500">By purchasing tickets, you agree to our terms and conditions.</p>
             </CardFooter>
           </Card>
         </div>

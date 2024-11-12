@@ -5,13 +5,7 @@ import { CalendarDays, MapPin, ArrowRight } from "lucide-react"
 import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
 const featuredEvents = [
   {
@@ -51,10 +45,7 @@ export function HomePageComponent() {
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/events"
-                  className="text-gray-600 hover:text-gray-800"
-                >
+                <Link href="/events" className="text-gray-600 hover:text-gray-800">
                   Events
                 </Link>
               </li>
@@ -67,10 +58,7 @@ export function HomePageComponent() {
                 </Link>
               </li> */}
               <li>
-                <Link
-                  href="/contact"
-                  className="text-gray-600 hover:text-gray-800"
-                >
+                <Link href="/contact" className="text-gray-600 hover:text-gray-800">
                   Contact
                 </Link>
               </li>
@@ -82,12 +70,8 @@ export function HomePageComponent() {
       <main className="flex-grow">
         <section className="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-20">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Experience Unforgettable Events
-            </h2>
-            <p className="text-xl mb-8">
-              Discover and attend amazing parties near you
-            </p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Experience Unforgettable Events</h2>
+            <p className="text-xl mb-8">Discover and attend amazing parties near you</p>
             <Button size="lg" asChild>
               <Link href="/events">
                 Explore Events
@@ -99,15 +83,10 @@ export function HomePageComponent() {
 
         <section className="py-16 bg-gray-100">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">
-              Featured Events
-            </h2>
+            <h2 className="text-3xl font-bold text-center mb-12">Featured Events</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredEvents.map((event) => (
-                <Card
-                  key={event.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
-                >
+                <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
                   <Image
                     src={event.image}
                     alt={event.title}
@@ -142,9 +121,7 @@ export function HomePageComponent() {
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-4">Ready to Party?</h2>
-            <p className="text-xl mb-8">
-              Don&apos;t miss out on the hottest events in town!
-            </p>
+            <p className="text-xl mb-8">Don&apos;t miss out on the hottest events in town!</p>
             <Button size="lg" asChild>
               <Link href="/events">
                 See All Events

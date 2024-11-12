@@ -2,14 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Calendar, Clock, MapPin } from "lucide-react"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -58,9 +51,7 @@ export function PartyEvents() {
     <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800">
       <header className="bg-white dark:bg-gray-800 shadow-lg">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-4xl font-bold text-center text-gray-800 dark:text-white">
-            Upcoming Party Events
-          </h1>
+          <h1 className="text-4xl font-bold text-center text-gray-800 dark:text-white">Upcoming Party Events</h1>
           <p className="mt-2 text-xl text-center text-gray-600 dark:text-gray-300">
             Discover and attend amazing parties near you
           </p>

@@ -5,34 +5,19 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Calendar as CalendarIcon, Clock, Plus, Trash2 } from "lucide-react"
 import { format } from "date-fns"
-
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@/components/ui/form"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from "@/components/ui/popover"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select"
-import { toast } from "@/hooks/use-toast"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { events } from "@/lib/base-api-client"
+import { UseFormReturn } from "react-hook-form"
+import { useEffect } from "react"
+import { useAuth } from "@clerk/nextjs"
+import { createApiClient } from "@/lib/api-client"
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -63,15 +48,9 @@ const formSchema = z.object({
         inputs: z
           .array(
             z.object({
-              key: z
-                .string()
-                .min(2, "Input key must be at least 2 characters."),
-              label: z
-                .string()
-                .min(2, "Input label must be at least 2 characters."),
-              placeholder: z
-                .string()
-                .min(2, "Input placeholder must be at least 2 characters."),
+              key: z.string().min(2, "Input key must be at least 2 characters."),
+              label: z.string().min(2, "Input label must be at least 2 characters."),
+              placeholder: z.string().min(2, "Input placeholder must be at least 2 characters."),
               type: z.enum(
                 [
                   "text",
@@ -102,7 +81,20 @@ const formSchema = z.object({
             })
           )
           .optional()
-          .default([])
+          .default([
+            {
+              key: "fullName",
+              label: "Full Name",
+              placeholder: "Enter your Full Name",
+              type: "text"
+            },
+            {
+              key: "email",
+              label: "Email",
+              placeholder: "Enter your Email",
+              type: "email"
+            }
+          ])
       })
     )
     .min(1, "At least one ticket type is required.")
@@ -116,7 +108,28 @@ export function AdminCreateEventComponent() {
       description: "",
       location: "",
       theme: "",
-      tickets: [{ name: "", price: 0, quantity: 1, pax: 1, inputs: [] }]
+      tickets: [
+        {
+          name: "",
+          price: 0,
+          quantity: 1,
+          pax: 1,
+          inputs: [
+            {
+              key: "fullName",
+              label: "Full Name",
+              placeholder: "Enter your Full Name",
+              type: "text"
+            },
+            {
+              key: "email",
+              label: "Email",
+              placeholder: "Enter your Email",
+              type: "email"
+            }
+          ]
+        }
+      ]
     }
   })
 
@@ -129,12 +142,31 @@ export function AdminCreateEventComponent() {
     control: form.control
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    toast({
-      title: "Event Created",
-      description: "The event and tickets have been successfully created."
-    })
+  const auth = useAuth()
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(form.formState.errors, "errs")
+
+    const token = await auth.getToken()
+    if (!token) return
+
+    const eventData: events.CreateEventRequest = {
+      title: values.title,
+      description: values.description,
+      date: values.date.toISOString(), // Convert Date to string
+      time: new Date(values.date).getTime(),
+      location: values.location,
+      theme: values.theme,
+      tickets: form.watch("tickets")
+    }
+
+    try {
+      await createApiClient(token).events.CreateEvent(eventData)
+      //   toast.success("Event created successfully!")
+    } catch (error) {
+      //   toast.error("Failed to create event. Please try again.")
+      console.log(error)
+    }
   }
 
   return (
@@ -151,9 +183,7 @@ export function AdminCreateEventComponent() {
                 <FormControl>
                   <Input placeholder="Summer Beach Party" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Enter a catchy title for your event.
-                </FormDescription>
+                <FormDescription>Enter a catchy title for your event.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -165,14 +195,9 @@ export function AdminCreateEventComponent() {
               <FormItem>
                 <FormLabel>Event Description</FormLabel>
                 <FormControl>
-                  <Textarea
-                    placeholder="Join us for a night of fun and dancing on the beach..."
-                    {...field}
-                  />
+                  <Textarea placeholder="Join us for a night of fun and dancing on the beach..." {...field} />
                 </FormControl>
-                <FormDescription>
-                  Provide a detailed description of your event.
-                </FormDescription>
+                <FormDescription>Provide a detailed description of your event.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -194,11 +219,7 @@ export function AdminCreateEventComponent() {
                             !field.value && "text-muted-foreground"
                           )}
                         >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
+                          {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
@@ -208,16 +229,12 @@ export function AdminCreateEventComponent() {
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) =>
-                          date < new Date() || date < new Date("1900-01-01")
-                        }
+                        // disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
                         initialFocus
                       />
                     </PopoverContent>
                   </Popover>
-                  <FormDescription>
-                    Select the date of your event.
-                  </FormDescription>
+                  <FormDescription>Select the date of your event.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -234,9 +251,7 @@ export function AdminCreateEventComponent() {
                       <Clock className="ml-2 h-4 w-4 opacity-50" />
                     </div>
                   </FormControl>
-                  <FormDescription>
-                    Set the start time of your event.
-                  </FormDescription>
+                  <FormDescription>Set the start time of your event.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -251,9 +266,7 @@ export function AdminCreateEventComponent() {
                 <FormControl>
                   <Input placeholder="Sunset Beach, Miami" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Enter the location where the event will take place.
-                </FormDescription>
+                <FormDescription>Enter the location where the event will take place.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -267,9 +280,7 @@ export function AdminCreateEventComponent() {
                 <FormControl>
                   <Input placeholder="Tropical Paradise" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Specify the theme of your event.
-                </FormDescription>
+                <FormDescription>Specify the theme of your event.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -278,9 +289,7 @@ export function AdminCreateEventComponent() {
             <h2 className="text-xl font-semibold mb-4">Ticket Types</h2>
             {ticketFields.map((field, index) => (
               <div key={field.id} className="border p-4 rounded-md mb-4">
-                <h3 className="text-lg font-semibold mb-2">
-                  Ticket {index + 1}
-                </h3>
+                <h3 className="text-lg font-semibold mb-2">Ticket {index + 1}</h3>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <FormField
                     control={form.control}
@@ -308,9 +317,7 @@ export function AdminCreateEventComponent() {
                             step="0.01"
                             placeholder="99.99"
                             {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value))
-                            }
+                            onChange={(e) => field.onChange(parseFloat(e.target.value))}
                           />
                         </FormControl>
                         <FormMessage />
@@ -329,9 +336,7 @@ export function AdminCreateEventComponent() {
                             min="1"
                             placeholder="100"
                             {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value))
-                            }
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
                           />
                         </FormControl>
                         <FormMessage />
@@ -350,9 +355,7 @@ export function AdminCreateEventComponent() {
                             min="1"
                             placeholder="1"
                             {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value))
-                            }
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
                           />
                         </FormControl>
                         <FormMessage />
@@ -361,9 +364,7 @@ export function AdminCreateEventComponent() {
                   />
                 </div>
                 <div>
-                  <h4 className="text-md font-semibold mb-2">
-                    Additional Inputs
-                  </h4>
+                  <h4 className="text-md font-semibold mb-2">Additional Inputs</h4>
                   <TicketInputs ticketIndex={index} form={form} />
                 </div>
                 <Button
@@ -404,70 +405,86 @@ export function AdminCreateEventComponent() {
   )
 }
 
-import { UseFormReturn } from "react-hook-form"
-
-function TicketInputs({
-  ticketIndex,
-  form
-}: {
-  ticketIndex: number
-  form: UseFormReturn<z.infer<typeof formSchema>>
-}) {
+function TicketInputs({ ticketIndex, form }: { ticketIndex: number; form: UseFormReturn<z.infer<typeof formSchema>> }) {
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: `tickets.${ticketIndex}.inputs`
   })
+
+  useEffect(() => {
+    if (append) {
+      append([
+        {
+          key: "fullName",
+          label: "Full Name",
+          placeholder: "Enter your Full Name",
+          type: "text"
+        },
+        {
+          key: "email",
+          label: "Email",
+          placeholder: "Enter your Email",
+          type: "email"
+        }
+      ])
+    }
+  }, [append])
 
   return (
     <div>
       {fields.map((field, index) => (
         <div key={field.id} className="grid grid-cols-2 gap-4 mb-4">
           <FormField
+            // disabled={index == 0 || index == 1}
             control={form.control}
             name={`tickets.${ticketIndex}.inputs.${index}.key`}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Input Key</FormLabel>
                 <FormControl>
-                  <Input placeholder="fullName" {...field} />
+                  <Input placeholder="e.g. fullName" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
+            // disabled={index == 0 || index == 1}
             control={form.control}
             name={`tickets.${ticketIndex}.inputs.${index}.label`}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Input Label</FormLabel>
                 <FormControl>
-                  <Input placeholder="Full Name" {...field} />
+                  <Input placeholder="e.g. Full Name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
+            // disabled={index == 0 || index == 1}
             control={form.control}
             name={`tickets.${ticketIndex}.inputs.${index}.placeholder`}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Input Placeholder</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your full name" {...field} />
+                  <Input placeholder="e.g. Enter your full name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
+            // disabled={index == 0 || index == 1}
             control={form.control}
             name={`tickets.${ticketIndex}.inputs.${index}.type`}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Input Type</FormLabel>
                 <Select
+                  // disabled={index == 0 || index == 1}
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
@@ -509,16 +526,12 @@ function TicketInputs({
               </FormItem>
             )}
           />
-          <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            className="mt-2"
-            onClick={() => remove(index)}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Remove Input
-          </Button>
+          {!(index == 0 || index == 1) && (
+            <Button type="button" variant="destructive" size="sm" className="mt-2" onClick={() => remove(index)}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Remove Input
+            </Button>
+          )}
         </div>
       ))}
       <Button
@@ -526,9 +539,7 @@ function TicketInputs({
         variant="outline"
         size="sm"
         className="mt-2"
-        onClick={() =>
-          append({ key: "", label: "", placeholder: "", type: "text" })
-        }
+        onClick={() => append({ key: "", label: "", placeholder: "", type: "text" })}
       >
         <Plus className="h-4 w-4 mr-2" />
         Add Input

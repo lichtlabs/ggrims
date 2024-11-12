@@ -8,14 +8,7 @@ import { Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export function AdminLoginComponent() {
@@ -42,7 +35,7 @@ export function AdminLoginComponent() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId })
-        router.push("/dashboard") // Redirect to admin dashboard
+        router.push("/admin/dashboard") // Redirect to admin dashboard
       } else {
         console.error("Sign in failed", result)
         setError("Sign in failed. Please check your credentials and try again.")
@@ -63,12 +56,8 @@ export function AdminLoginComponent() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
-            Admin Login
-          </CardTitle>
-          <CardDescription className="text-center">
-            Enter your credentials to access the admin panel
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
+          <CardDescription className="text-center">Enter your credentials to access the admin panel</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,14 +89,8 @@ export function AdminLoginComponent() {
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">
-                    {showPassword ? "Hide password" : "Show password"}
-                  </span>
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
                 </Button>
               </div>
             </div>

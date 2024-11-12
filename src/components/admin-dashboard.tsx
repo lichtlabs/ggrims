@@ -13,44 +13,17 @@ import {
   Legend,
   PointElement
 } from "chart.js"
-import {
-  CalendarDays,
-  DollarSign,
-  PlusCircle,
-  Ticket,
-  Users
-} from "lucide-react"
+import { CalendarDays, DollarSign, PlusCircle, Ticket, Users } from "lucide-react"
 import Link from "next/link"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 import { UpcomingEvent } from "@/types"
+import { useAuth } from "@clerk/nextjs"
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend
-)
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend)
 
 // Mock data - replace with actual data fetching in a real application
 const revenueData = {
@@ -127,6 +100,7 @@ const chartOptions = {
 
 export function AdminDashboardComponent() {
   const [activeTab, setActiveTab] = useState("overview")
+  const { signOut } = useAuth()
 
   return (
     <div className="p-8">
@@ -138,6 +112,10 @@ export function AdminDashboardComponent() {
             Create Event
           </Button>
         </Link>
+        <Button onClick={async () => await signOut()}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Sign Out
+        </Button>
       </div>
 
       <div className="mb-6">
@@ -148,10 +126,7 @@ export function AdminDashboardComponent() {
         >
           Overview
         </Button>
-        <Button
-          onClick={() => setActiveTab("events")}
-          variant={activeTab === "events" ? "default" : "outline"}
-        >
+        <Button onClick={() => setActiveTab("events")} variant={activeTab === "events" ? "default" : "outline"}>
           Upcoming Events
         </Button>
       </div>
@@ -161,58 +136,42 @@ export function AdminDashboardComponent() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Revenue
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">$45,231.89</div>
-                <p className="text-xs text-muted-foreground">
-                  +20.1% from last month
-                </p>
+                <p className="text-xs text-muted-foreground">+20.1% from last month</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Tickets Sold
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Tickets Sold</CardTitle>
                 <Ticket className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">2,350</div>
-                <p className="text-xs text-muted-foreground">
-                  +15% from last month
-                </p>
+                <p className="text-xs text-muted-foreground">+15% from last month</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Active Events
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Active Events</CardTitle>
                 <CalendarDays className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">12</div>
-                <p className="text-xs text-muted-foreground">
-                  3 new this month
-                </p>
+                <p className="text-xs text-muted-foreground">3 new this month</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Attendees
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Total Attendees</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">11,573</div>
-                <p className="text-xs text-muted-foreground">
-                  +7.4% from last month
-                </p>
+                <p className="text-xs text-muted-foreground">+7.4% from last month</p>
               </CardContent>
             </Card>
           </div>
@@ -242,9 +201,7 @@ export function AdminDashboardComponent() {
         <Card>
           <CardHeader>
             <CardTitle>Upcoming Events</CardTitle>
-            <CardDescription>
-              An overview of your next events and their performance
-            </CardDescription>
+            <CardDescription>An overview of your next events and their performance</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
