@@ -3,35 +3,29 @@
 import Link from "next/link"
 import { CalendarDays, MapPin, ArrowRight } from "lucide-react"
 import Image from "next/image"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useQuery } from "@tanstack/react-query"
+import { createApiClient } from "@/lib/api-client"
 
-const featuredEvents = [
-  {
-    id: 1,
-    title: "Summer Beach Party",
-    date: "2024-07-15",
-    location: "Sunset Beach, Miami",
-    image: "/placeholder.svg"
-  },
-  {
-    id: 2,
-    title: "Neon Nights Rave",
-    date: "2024-08-05",
-    location: "Warehouse 13, Downtown",
-    image: "/placeholder.svg"
-  },
-  {
-    id: 3,
-    title: "Vintage Gala",
-    date: "2024-09-20",
-    location: "Grand Ballroom, Luxury Hotel",
-    image: "/placeholder.svg"
-  }
-]
+async function fetchFeaturedEvents() {
+  const response = await createApiClient().events.ListEvents()
+  return response.data
+}
 
 export function HomePageComponent() {
+  const {
+    data: featuredEvents,
+    error,
+    isLoading
+  } = useQuery({
+    queryKey: ["featuredEvents"],
+    queryFn: fetchFeaturedEvents
+  })
+
+  if (isLoading) return <div>Loading...</div>
+  if (error) return <div>Error loading events: {error.message}</div>
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="bg-white shadow-sm">
@@ -49,14 +43,6 @@ export function HomePageComponent() {
                   Events
                 </Link>
               </li>
-              {/* <li>
-                <Link
-                  href="/about"
-                  className="text-gray-600 hover:text-gray-800"
-                >
-                  About
-                </Link>
-              </li> */}
               <li>
                 <Link href="/contact" className="text-gray-600 hover:text-gray-800">
                   Contact
@@ -85,7 +71,7 @@ export function HomePageComponent() {
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-12">Featured Events</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredEvents.map((event) => (
+              {featuredEvents?.slice(0, 3).map((event) => (
                 <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
                   <Image
                     src={event.image}
