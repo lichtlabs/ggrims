@@ -1,52 +1,35 @@
 "use client"
 
+import { useQuery } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import { Calendar, Clock, MapPin } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Event } from "@/types"
 import Image from "next/image"
+import { createApiClient } from "@/lib/api-client"
+import { events } from "@/lib/base-api-client"
+import { format } from "date-fns"
 
-// Sample event data
-const events: Event[] = [
-  {
-    id: "1",
-    title: "Neon Nights Rave",
-    description: "Electrifying dance party with neon lights and top DJs.",
-    date: "2024-06-15",
-    time: "10:00 PM",
-    location: "Warehouse 13, Downtown",
-    image: "/placeholder.svg",
-    theme: "Neon",
-    tickets: []
-  },
-  {
-    id: "2",
-    title: "Roaring 20s Gala",
-    description: "Step back in time with this glamorous 1920s themed party.",
-    date: "2024-07-22",
-    time: "08:00 PM",
-    location: "Grand Ballroom, Luxury Hotel",
-    image: "/placeholder.svg",
-    theme: "Vintage",
-    tickets: []
-  },
-  {
-    id: "3",
-    title: "Tropical Beach Bash",
-    description: "Soak up the summer vibes at our tropical-themed beach party.",
-    date: "2024-08-05",
-    time: "02:00 PM",
-    location: "Sunset Beach",
-    image: "/placeholder.svg",
-    theme: "Beach",
-    tickets: []
-  }
-]
+async function fetchEvents() {
+  const response = await createApiClient().events.ListEvents()
+  return response.data
+}
 
 export function PartyEvents() {
+  const {
+    data: events,
+    error,
+    isLoading
+  } = useQuery({
+    queryKey: ["events"],
+    queryFn: fetchEvents
+  })
+
+  if (isLoading) return <div>Loading...</div>
+  if (error) return <div>Error loading events: {error.message}</div>
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800">
       <header className="bg-white dark:bg-gray-800 shadow-lg">
@@ -60,7 +43,7 @@ export function PartyEvents() {
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {events.map((event, index) => (
+          {events?.map((event: events.EventDetail, index: number) => (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, y: 20 }}
@@ -72,8 +55,8 @@ export function PartyEvents() {
                   src={event.image}
                   alt={event.title}
                   className="w-full h-48 object-cover"
-                  width={600} // Specify the width
-                  height={400} // Specify the height
+                  width={600}
+                  height={400}
                 />
                 <CardHeader>
                   <CardTitle>{event.title}</CardTitle>
@@ -83,11 +66,11 @@ export function PartyEvents() {
                   <Badge className="mb-2">{event.theme} Theme</Badge>
                   <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                     <Calendar className="mr-2 h-4 w-4" />
-                    <span>{event.date}</span>
+                    <span>{new Date(event.date).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
                     <Clock className="mr-2 h-4 w-4" />
-                    <span>{event.time}</span>
+                    <span>{format(new Date(event.time * 1000), "h:mm a")}</span>
                   </div>
                   <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
                     <MapPin className="mr-2 h-4 w-4" />

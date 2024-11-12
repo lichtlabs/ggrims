@@ -101,6 +101,19 @@ export namespace events {
     location: string
     theme: string
     tickets: Ticket[]
+    imageUrl: string
+  }
+
+  export interface EventDetail {
+    id: string
+    title: string
+    description: string
+    date: string
+    time: number
+    location: string
+    image: string
+    theme: string
+    tickets: Ticket[]
   }
 
   export interface InsertionResponse {
@@ -112,7 +125,7 @@ export namespace events {
    */
   export interface Ticket {
     name: string
-    price: number
+    price: string
     quantity: number
     pax: number
     inputs: TicketInput[]
@@ -141,50 +154,17 @@ export namespace events {
       return (await resp.json()) as BaseResponse<InsertionResponse>
     }
 
-    public async GetEvents(): Promise<BaseResponse<store.Event[]>> {
+    public async GetEventDetail(id: string): Promise<BaseResponse<EventDetail>> {
       // Now make the actual call to the API
-      const resp = await this.baseClient.callAPI("GET", `/v2/events/featured`)
-      return (await resp.json()) as BaseResponse<store.Event[]>
+      const resp = await this.baseClient.callAPI("GET", `/v2/events/${encodeURIComponent(id)}`)
+      return (await resp.json()) as BaseResponse<EventDetail>
     }
-  }
-}
 
-export namespace pgtype {
-  export interface Date {
-    Time: string
-    InfinityModifier: InfinityModifier
-    Valid: boolean
-  }
-
-  export type InfinityModifier = number
-
-  /**
-   * Time represents the PostgreSQL time type. The PostgreSQL time is a time of day without time zone.
-   *
-   * Time is represented as the number of microseconds since midnight in the same way that PostgreSQL does. Other time
-   * and date types in pgtype can use time.Time as the underlying representation. However, pgtype.Time type cannot due
-   * to needing to handle 24:00:00. time.Time converts that to 00:00:00 on the following day.
-   */
-  export interface Time {
-    /**
-     * Number of microseconds since midnight
-     */
-    Microseconds: number
-
-    Valid: boolean
-  }
-}
-
-export namespace store {
-  export interface Event {
-    ID: string
-    Title: string
-    Description: string
-    Date: pgtype.Date
-    Time: pgtype.Time
-    Location: string
-    Theme: string
-    Image: string
+    public async ListEvents(): Promise<BaseResponse<EventDetail[]>> {
+      // Now make the actual call to the API
+      const resp = await this.baseClient.callAPI("GET", `/v2/events`)
+      return (await resp.json()) as BaseResponse<EventDetail[]>
+    }
   }
 }
 

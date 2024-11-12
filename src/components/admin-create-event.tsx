@@ -18,6 +18,9 @@ import { UseFormReturn } from "react-hook-form"
 import { useEffect } from "react"
 import { useAuth } from "@clerk/nextjs"
 import { createApiClient } from "@/lib/api-client"
+import { useMutation } from "@tanstack/react-query"
+import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -29,7 +32,7 @@ const formSchema = z.object({
   date: z.date({
     required_error: "Event date is required."
   }),
-  time: z.string({
+  time: z.date({
     required_error: "Event time is required."
   }),
   location: z.string().min(2, {
@@ -42,7 +45,7 @@ const formSchema = z.object({
     .array(
       z.object({
         name: z.string().min(2, "Ticket name must be at least 2 characters."),
-        price: z.number().min(0, "Price must be a positive number."),
+        price: z.string().min(1, "Price must be a positive number."),
         quantity: z.number().int().min(1, "Quantity must be at least 1."),
         pax: z.number().int().min(1, "Pax must be at least 1."),
         inputs: z
@@ -97,7 +100,8 @@ const formSchema = z.object({
           ])
       })
     )
-    .min(1, "At least one ticket type is required.")
+    .min(1, "At least one ticket type is required."),
+  imageUrl: z.string().url("Must be a valid URL.")
 })
 
 export function AdminCreateEventComponent() {
@@ -111,7 +115,7 @@ export function AdminCreateEventComponent() {
       tickets: [
         {
           name: "",
-          price: 0,
+          price: "0",
           quantity: 1,
           pax: 1,
           inputs: [
@@ -129,7 +133,8 @@ export function AdminCreateEventComponent() {
             }
           ]
         }
-      ]
+      ],
+      imageUrl: ""
     }
   })
 
@@ -143,29 +148,46 @@ export function AdminCreateEventComponent() {
   })
 
   const auth = useAuth()
+  const { toast } = useToast()
+  const router = useRouter()
+
+  const mutation = useMutation({
+    mutationFn: async (eventData: events.CreateEventRequest) => {
+      const token = await auth.getToken()
+      if (!token) throw new Error("No token available")
+      return createApiClient(token).events.CreateEvent(eventData)
+    },
+    onSuccess: () => {
+      // Handle success (e.g., show a success message)
+      console.log("Event created successfully!")
+      toast({ title: "Success", description: "Event created successfully!" })
+      // router.push("/events")
+    },
+    onError: (error) => {
+      // Handle error (e.g., show an error message)
+      console.error("Failed to create event:", error)
+      toast({ title: "Error", description: "Failed to create event." })
+    }
+  })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(form.formState.errors, "errs")
-
-    const token = await auth.getToken()
-    if (!token) return
 
     const eventData: events.CreateEventRequest = {
       title: values.title,
       description: values.description,
       date: values.date.toISOString(), // Convert Date to string
-      time: new Date(values.date).getTime(),
+      time: values.time.getTime(), // Use the time input directly
       location: values.location,
       theme: values.theme,
-      tickets: form.watch("tickets")
+      tickets: form.watch("tickets"),
+      imageUrl: values.imageUrl
     }
 
     try {
-      await createApiClient(token).events.CreateEvent(eventData)
-      //   toast.success("Event created successfully!")
+      await mutation.mutateAsync(eventData)
     } catch (error) {
-      //   toast.error("Failed to create event. Please try again.")
-      console.log(error)
+      console.error("Error during mutation:", error)
     }
   }
 
@@ -247,7 +269,17 @@ export function AdminCreateEventComponent() {
                   <FormLabel>Event Time</FormLabel>
                   <FormControl>
                     <div className="flex items-center">
-                      <Input type="time" {...field} />
+                      <Input
+                        type="time"
+                        {...field}
+                        value={field?.value?.toLocaleTimeString()}
+                        onChange={(e) => {
+                          const [hours, minutes] = e.target.value.split(":").map(Number) // Convert to numbers
+                          const date = form.watch("date") // Get the selected date
+                          date.setHours(hours, minutes) // Set hours and minutes
+                          field.onChange(date) // Update the time in the form
+                        }}
+                      />
                       <Clock className="ml-2 h-4 w-4 opacity-50" />
                     </div>
                   </FormControl>
@@ -312,12 +344,10 @@ export function AdminCreateEventComponent() {
                         <FormLabel>Price</FormLabel>
                         <FormControl>
                           <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
+                            type="text"
                             placeholder="99.99"
                             {...field}
-                            onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                            onChange={(e) => field.onChange(e.target.value)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -387,7 +417,7 @@ export function AdminCreateEventComponent() {
               onClick={() =>
                 appendTicket({
                   name: "",
-                  price: 0,
+                  price: "0",
                   quantity: 1,
                   pax: 1,
                   inputs: []
@@ -398,6 +428,20 @@ export function AdminCreateEventComponent() {
               Add Ticket Type
             </Button>
           </div>
+          <FormField
+            control={form.control}
+            name="imageUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Image URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter image URL" {...field} />
+                </FormControl>
+                <FormDescription>Provide a URL for the event image.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <Button type="submit">Create Event</Button>
         </form>
       </Form>

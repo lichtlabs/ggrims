@@ -100,7 +100,7 @@ export function HomePageComponent() {
                   <CardContent>
                     <div className="flex items-center text-sm text-gray-500 mb-2">
                       <CalendarDays className="mr-2 h-4 w-4" />
-                      <span>{event.date}</span>
+                      <span>{new Date(event.date).toLocaleDateString()}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
                       <MapPin className="mr-2 h-4 w-4" />
